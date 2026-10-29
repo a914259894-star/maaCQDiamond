@@ -41,8 +41,22 @@ def tpl(name: str) -> np.ndarray:
     return img
 
 
-def capture(context) -> np.ndarray:
-    return context.tasker.controller.post_screencap().wait().get()
+def capture(context, retries: int = 2) -> np.ndarray:
+    """截图；拿到空图时重试，最终仍失败就抛异常。
+
+    某些截图方式（如 MuMu 的 EmulatorExtras）会偶发返回空图，不检查的话后续
+    识别会全部静默失败——表现为「任务在跑但一个都不点」，很难排查。这里显式报错。
+    """
+    img = None
+    for _ in range(retries + 1):
+        img = context.tasker.controller.post_screencap().wait().get()
+        if img is not None and getattr(img, "ndim", 0) == 3 and img.shape[0] > 0:
+            return img
+        time.sleep(0.2)
+    raise RuntimeError(
+        "截图失败：控制器返回空图像。请检查 MFAAvalonia 设备设置里的「截图方式」，"
+        "不要只保留 EmulatorExtras（MuMu 上会偶发取不到画面）"
+    )
 
 
 def click(context, x, y, delay: float = 0.0):
@@ -161,7 +175,7 @@ def click_confirm_in(context, img, keys=("确认", "确定"), roi=None, max_len=
 class ClickSpammer(threading.Thread):
     """后台高频点击（用于战斗中的方块条连点）。"""
 
-    def __init__(self, context, point, interval=0.12):
+    def __init__(self, context, point, interval=0.03):
         super().__init__(daemon=True)
         self.context = context
         self.point = point

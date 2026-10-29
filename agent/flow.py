@@ -122,7 +122,7 @@ class DismissPopup(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         for _ in range(3):
             img = capture(context)
-            if click_confirm_in(context, img, keys=("确认", "确定")):
+            if click_confirm_in(context, img, keys=("确认", "确定"), roi=(300, 380, 700, 320)):
                 print("[popup] 已关闭游戏提示框", flush=True)
                 time.sleep(0.9)
                 return True

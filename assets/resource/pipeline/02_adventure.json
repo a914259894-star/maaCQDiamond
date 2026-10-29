@@ -17,10 +17,47 @@
             300
         ],
         "next": [
-            "Trial_CheckCount"
+            "Trial_CheckCount",
+            "Adv_Trial_Retry"
         ],
         "timeout": 30000,
         "rate_limit": 400,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Adv_Trial_Retry": {
+        "_comment": "点了「试炼」仍停在冒险列表时补点，避免 30 秒空转",
+        "recognition": "TemplateMatch",
+        "template": [
+            "AdvTrial.png"
+        ],
+        "roi": [
+            860,
+            430,
+            160,
+            90
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            930,
+            300
+        ],
+        "next": [
+            "Trial_CheckCount",
+            "Adv_Trial_Retry"
+        ],
+        "timeout": 20000,
+        "rate_limit": 400,
+        "max_hit": 8,
+        "pre_delay": 200,
         "pre_wait_freezes": {
             "time": 400,
             "target": [

@@ -22,7 +22,9 @@ from game_common import (
 # 全部基于 1280x720；实测自 1920x1080 截图（÷1.5）
 DEFAULT_CFG = {
     "bar_point": [1132, 653],      # 方块条最右侧方块
-    "bar_interval": 0.12,          # 连点间隔（秒）
+    "bar_interval": 0.03,          # 单次点击后的额外间隔（秒）；点击本身约 50ms
+    "reco_interval": 0.50,         # 识别周期（秒）；间隙全部让给连点线程
+    "min_click_window": 0.25,      # 每轮识别后至少留给连点的时长（截图慢时兜底）
     "lord_point": [830, 562],      # 领主按钮
     "god_point": [1140, 562],      # 女神按钮
     "lord_roi": [760, 540, 145, 45],
@@ -51,12 +53,20 @@ class BattleLoop(CustomAction):
         god_ready_at = 0.0
         lord_clicks = 0
         god_clicks = 0
+        # 「本关禁用了领主/女神」的判定：点了之后区域颜色却不消失，说明按钮是禁用图标
+        lord_last_ratio = 0.0
+        god_last_ratio = 0.0
+        lord_futile = 0
+        god_futile = 0
+        lord_disabled = False
+        god_disabled = False
         started = time.time()
         ended = False
         last_beat = started
 
         try:
             while time.time() - started < cfg["max_battle_seconds"]:
+                tick = time.time()
                 img = capture(context)
 
                 # 结算界面：出现「返回城镇」即认为战斗结束
@@ -67,24 +77,50 @@ class BattleLoop(CustomAction):
                 now = time.time()
 
                 # 领主：满能量红条 + TOUCH
-                if now - lord_ready_at > cfg["lord_cooldown"]:
+                if not lord_disabled and now - lord_ready_at > cfg["lord_cooldown"]:
                     red = color_ratio(img, cfg["lord_roi"], "red")
                     if red >= cfg["red_threshold"]:
-                        click(context, *cfg["lord_point"])
-                        lord_ready_at = now
-                        lord_clicks += 1
-                        print(f"[battle] 领主 TOUCH -> 点击（第 {lord_clicks} 次）", flush=True)
-                        continue
+                        # 点过之后红条毫无变化 → 多半是本关「禁止使用领主」
+                        if lord_last_ratio and red >= lord_last_ratio - 0.02:
+                            lord_futile += 1
+                        else:
+                            lord_futile = 0
+                        lord_last_ratio = red
+                        if lord_futile >= 3:
+                            lord_disabled = True
+                            print(
+                                f"[battle] 领主区域常驻红色（{red:.2f}）且点击无效，"
+                                f"判定本关禁用领主，停止点击",
+                                flush=True,
+                            )
+                        else:
+                            click(context, *cfg["lord_point"])
+                            lord_ready_at = now
+                            lord_clicks += 1
+                            print(f"[battle] 领主 TOUCH -> 点击（第 {lord_clicks} 次）", flush=True)
 
                 # 女神：能量格填满（青蓝）
-                if now - god_ready_at > cfg["god_cooldown"]:
+                # 注意用独立 if，否则领主分支命中时会一直挡住女神判定
+                if not god_disabled and now - god_ready_at > cfg["god_cooldown"]:
                     cyan = color_ratio(img, cfg["god_roi"], "cyan")
                     if cyan >= cfg["cyan_threshold"]:
-                        click(context, *cfg["god_point"])
-                        god_ready_at = now
-                        god_clicks += 1
-                        print(f"[battle] 女神 TOUCH -> 点击（第 {god_clicks} 次）", flush=True)
-                        continue
+                        if god_last_ratio and cyan >= god_last_ratio - 0.02:
+                            god_futile += 1
+                        else:
+                            god_futile = 0
+                        god_last_ratio = cyan
+                        if god_futile >= 3:
+                            god_disabled = True
+                            print(
+                                f"[battle] 女神区域常驻青蓝（{cyan:.2f}）且点击无效，"
+                                f"判定本关禁用女神，停止点击",
+                                flush=True,
+                            )
+                        else:
+                            click(context, *cfg["god_point"])
+                            god_ready_at = now
+                            god_clicks += 1
+                            print(f"[battle] 女神 TOUCH -> 点击（第 {god_clicks} 次）", flush=True)
 
                 # 每 15 秒报一次心跳，方便观察
                 if now - last_beat >= 15:
@@ -94,6 +130,15 @@ class BattleLoop(CustomAction):
                         f"方块={spammer.count} 领主={lord_clicks} 女神={god_clicks}",
                         flush=True,
                     )
+
+                # 截图与点击共用同一控制器（串行），两次识别之间的空档全部让给连点线程。
+                # 截图耗时波动很大（200ms~2s），用 min_click_window 兜底，
+                # 保证再慢的环境里每轮也有固定长度的连点窗口。
+                rest = max(
+                    cfg["min_click_window"],
+                    cfg["reco_interval"] - (time.time() - tick),
+                )
+                time.sleep(rest)
         except Exception as exc:  # noqa: BLE001
             print(f"[battle] 循环异常: {exc!r}", flush=True)
             raise
@@ -106,7 +151,9 @@ class BattleLoop(CustomAction):
 
         print(
             f"[battle] 结束 ended={ended} 用时={time.time() - started:.1f}s "
-            f"方块连点={spammer.count} 领主={lord_clicks} 女神={god_clicks}",
+            f"方块连点={spammer.count} 领主={lord_clicks}"
+            f"{'（本关禁用）' if lord_disabled else ''} 女神={god_clicks}"
+            f"{'（本关禁用）' if god_disabled else ''}",
             flush=True,
         )
 
@@ -127,7 +174,8 @@ def close_all_popups(context, tries: int = 6) -> int:
     closed = 0
     for _ in range(tries):
         img = capture(context)
-        if click_confirm_in(context, img, keys=("确认", "确定")):
+        # OCR 限定在弹窗可能出现的中间区域，全屏识别每轮要多花 150ms 左右
+        if click_confirm_in(context, img, keys=("确认", "确定"), roi=(300, 380, 700, 320)):
             closed += 1
             print(f"[popup] 关闭弹窗（第 {closed} 个）", flush=True)
             time.sleep(1.0)
