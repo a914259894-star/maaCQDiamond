@@ -73,8 +73,8 @@
             ]
         }
     },
+    // 模式选择页仍停留时补点一次：转场未结束时首次点击常被游戏吞掉
     "Mode_Adventure_Retry": {
-        "_comment": "模式选择页仍停留时补点一次：转场未结束时首次点击常被游戏吞掉",
         "recognition": "TemplateMatch",
         "template": [
             "ModeAdventure.png"

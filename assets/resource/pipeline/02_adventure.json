@@ -32,8 +32,8 @@
             ]
         }
     },
+    // 点了「试炼」仍停在冒险列表时补点，避免 30 秒空转
     "Adv_Trial_Retry": {
-        "_comment": "点了「试炼」仍停在冒险列表时补点，避免 30 秒空转",
         "recognition": "TemplateMatch",
         "template": [
             "AdvTrial.png"
