@@ -1,4 +1,5 @@
 {
+    // OCR 通用节点：只作为识别算法用，本身不做任何动作
     "OCR_Full": {
         "recognition": "OCR",
         "expected": [
@@ -6,49 +7,11 @@
         ],
         "action": "DoNothing"
     },
-    "Stop_Unexpected": {
-        "recognition": "DirectHit",
-        "action": "Custom",
-        "custom_action": "stop_with_alert",
-        "custom_action_param": {
-            "reason": "流程未按预期推进（界面识别超时），请检查游戏画面"
-        }
-    },
-    "Popup_Notice": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "NoticeClose.png"
-        ],
-        "roi": [
-            1040,
-            0,
-            240,
-            80
-        ],
-        "threshold": 0.85,
-        "action": "Click",
-        "target": [
-            1235,
-            40
-        ],
-        "post_delay": 600,
-        "next": [],
-        "timeout": 3000,
-        "rate_limit": 200,
-        "pre_wait_freezes": {
-            "time": 300,
-            "target": [
-                0,
-                0,
-                1280,
-                720
-            ]
-        }
-    },
+
+    // 惊喜问答：四个角色依次跑过，要回答右侧角色排第几。
+    // 答错会被限制进入（实测从 43 秒涨到 8 分钟），自动乱猜只会越来越糟，
+    // 所以这里直接停任务交给人工，答完再重新启动。
     "Popup_Quiz": {
-        // 试炼页会弹「惊喜问答」：四个角色依次跑过，要回答右侧角色排第几。
-        // 答错会触发「无法进入！一定时间内无法进入」的冷却（实测从 43 秒涨到 8 分钟），
-        // 自动乱猜只会越来越糟，所以这里停任务交给人工。
         "recognition": "TemplateMatch",
         "template": [
             "SurpriseQuiz.png"
@@ -60,42 +23,33 @@
             160
         ],
         "threshold": 0.85,
-        "action": "Custom",
-        "custom_action": "stop_with_alert",
-        "custom_action_param": {
-            "reason": "试炼页弹出了「惊喜问答」答题，答错会被限制进入一定时间。请手动答完再重新启动任务"
-        },
-        "timeout": 3000,
-        "rate_limit": 300
+        "action": "StopTask",
+        "next": []
     },
-    "Popup_Unable": {
-        // 「无法进入！一定时间内无法进入。」—— 点确定关掉，回到试炼关卡页
+
+    // 通用确认框：「队伍锁定」「开启练习模式」「删除结束」等都长这样，
+    // 统一识别「确认 / 确定」并点它
+    "Popup_Confirm": {
         "recognition": "OCR",
         "expected": [
-            "无法进入",
-            "一定时间内"
+            "确认",
+            "确定"
         ],
         "roi": [
-            400,
-            120,
-            500,
-            260
+            380,
+            450,
+            540,
+            220
         ],
         "action": "Click",
-        "target": [
-            640,
-            548
-        ],
-        "post_delay": 1200,
+        "post_delay": 900,
         "next": [
-            "Trial_SelectTeam"
-        ],
-        "timeout": 4000,
-        "rate_limit": 800
+            "Main"
+        ]
     },
+
+    // 每日签到：登录后会盖在主城上，点右上角 × 关掉
     "Popup_CheckIn": {
-        // 每日签到：登录后盖在主城上（「每日签到！」和「快乐CQ每一天！」两个页面都会出现），
-        // 用左侧「签到奖励」标签识别，点右上 × 关闭后仍在主城，可 JumpBack 回原流程
         "recognition": "TemplateMatch",
         "template": [
             "CheckInPanel.png"
@@ -113,29 +67,32 @@
             41
         ],
         "post_delay": 900,
-        "next": [],
-        "timeout": 3000,
-        "rate_limit": 300
+        "next": [
+            "Main"
+        ]
     },
-    "Popup_Error": {
-        "recognition": "OCR",
-        "expected": [
-            "errorCode",
-            "External library",
-            "请稍后再试",
-            "网络不稳定",
-            "断开连接"
+
+    // 公告：登录后弹出，点右上角 × 关掉
+    "Popup_Notice": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "NoticeClose.png"
         ],
         "roi": [
-            300,
-            150,
-            700,
-            420
+            1040,
+            0,
+            240,
+            80
         ],
-        "action": "Custom",
-        "custom_action": "dismiss_popup",
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1235,
+            40
+        ],
         "post_delay": 700,
-        "rate_limit": 800,
-        "next": []
+        "next": [
+            "Main"
+        ]
     }
 }

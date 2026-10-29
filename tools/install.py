@@ -134,8 +134,12 @@ def install_chores():
 
 
 def install_agent():
+    """纯 pipeline 版本没有 agent；留个兼容，未来需要自定义逻辑时把 agent/ 加回来即可。"""
+    src = working_dir / "agent"
+    if not src.exists():
+        return
     shutil.copytree(
-        working_dir / "agent",
+        src,
         install_path / "agent",
         dirs_exist_ok=True,
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "requirements.txt"),

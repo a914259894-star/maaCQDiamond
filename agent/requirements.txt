@@ -1,5 +1,0 @@
-# Agent 子进程运行时依赖（随包 Python 使用）
-# maafw 版本需与 MaaFramework 内核版本一致，见 .github/workflows/install.yml 的 MAAFW_VERSION
-maafw==5.14.3
-opencv-python-headless
-numpy

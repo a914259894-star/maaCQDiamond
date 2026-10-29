@@ -1,19 +1,19 @@
 {
     // 克鲁赛德战记（Crusaders Quest）试炼循环工具
-    // 文档：https://maafw.xyz/docs/3.3-ProjectInterfaceV2
+    // 文档：https://maafw.com/docs/3.3-ProjectInterfaceV2
     "interface_version": 2,
     "name": "克鲁赛德战记 试炼循环",
-    "description": "自动进入试炼 → 战斗（领主/女神/方块条）→ 结算 → 次数用尽后重置账号并继续循环。",
+    "description": "自动进入试炼 → 战斗（盲点方块条 + 领主/女神 TOUCH）→ 结算 → 继续；次数用尽后自动删号（保留 7 天冷静期）并重新登录，恢复次数继续循环。",
     "contact": "QQ群: 123456789",
     "license": "MIT",
-    "welcome": "使用前请确认：游戏已在 MuMu 模拟器中运行，且当前处于「主城」界面。",
+    "welcome": "使用前请确认：游戏已在模拟器中运行并处于「主城」界面。截图方式保持默认即可，本工具不做任何改动。",
     "github": "https://github.com/a914259894-star/maaCQDiamond",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "controller": [
         {
-            "name": "MuMu 模拟器",
+            "name": "模拟器",
             "type": "Adb",
-            // 截图统一缩放到短边 720（即 1280x720），模板与坐标都按此分辨率制作
+            // 截图统一缩放到短边 720（即 1280x720），标志图与坐标都按此分辨率制作
             "display_short_side": 720
         }
     ],
@@ -25,73 +25,16 @@
             ]
         }
     ],
-    // Agent 子进程：使用项目内独立虚拟环境，避免与全局 MaaFw 版本互相影响
-    // CWD 为 interface.json 所在目录（assets/），因此路径为 ../.venv 与 ../agent
-    // 打包发版时需改为随包的便携式 Python 路径
-    "agent": {
-        "child_exec": "../.venv/Scripts/python.exe",
-        "child_args": [
-            "../agent/main.py"
-        ]
-    },
     "task": [
         {
             "name": "试炼循环",
-            "entry": "Main",
-            "option": [
-                "循环次数"
-            ]
+            "entry": "Main"
         },
         {
-            "name": "单次试炼（次数用尽即停，不删号）",
-            "entry": "Main",
-            "option": [
-                "循环次数"
-            ],
-            "pipeline_override": {
-                "Trial_CheckCount": {
-                    "custom_action_param": {
-                        "allow_reset": false
-                    }
-                },
-                "Result_Decide": {
-                    "custom_action_param": {
-                        "allow_reset": false
-                    }
-                }
-            }
+            // 单独跑「回到主城 → 菜单 → 帐号 → 删除帐号 → 重新登录」这一段，
+            // 用于验证删号链路；会真的提交删除（勾选 7 天冷静期，可撤销）
+            "name": "重置次数（删号）",
+            "entry": "Reset_Start"
         }
-    ],
-    "option": {
-        "循环次数": {
-            "type": "select",
-            "default_case": "1 次",
-            "cases": [
-                {
-                    "name": "1 次",
-                    "pipeline_override": {
-                        "Town_Start": {
-                            "max_hit": 1
-                        }
-                    }
-                },
-                {
-                    "name": "5 次",
-                    "pipeline_override": {
-                        "Town_Start": {
-                            "max_hit": 5
-                        }
-                    }
-                },
-                {
-                    "name": "20 次",
-                    "pipeline_override": {
-                        "Town_Start": {
-                            "max_hit": 20
-                        }
-                    }
-                }
-            ]
-        }
-    }
+    ]
 }

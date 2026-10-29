@@ -455,3 +455,5 @@ debug
 # WorkBuddy 项目数据
 .workbuddy/
 .venv/
+
+dist/

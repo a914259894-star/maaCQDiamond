@@ -1,0 +1,287 @@
+{
+    // ============================================================
+    // 战斗：确认进入战斗后，就一直盲点最右侧方块；
+    //       每点几下识别一次领主 / 女神进度条上有没有 TOUCH，有就点。
+    //
+    // 连点 3 次再识别 1 次：DirectHit 节点不需要截图，所以这 3 次点击几乎无间隔，
+    // 一轮下来约 0.2 秒，实际点击频率 10+ 次/秒，同时又不会漏掉 TOUCH。
+    // ============================================================
+    "Page_Battle": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_battle.png"
+        ],
+        "roi": [
+            1200,
+            0,
+            80,
+            60
+        ],
+        "threshold": 0.85,
+        "action": "DoNothing",
+        "next": [
+            "Battle_Tap1"
+        ],
+        "rate_limit": 0
+    },
+    "Battle_Tap1": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap2"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap2": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap3"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap3": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap4"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap4": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap5"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap5": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap6"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap6": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap7"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap7": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap8"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap8": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Lord",
+            "Battle_God",
+            "Page_Result",
+            "Battle_Tap1"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+
+    // 领主：进度条上出现 TOUCH 横幅 → 点领主按钮
+    "Battle_Lord": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_touch.png"
+        ],
+        "roi": [
+            755,
+            535,
+            200,
+            55
+        ],
+        "threshold": 0.8,
+        "action": "Click",
+        "target": [
+            830,
+            562
+        ],
+        "next": [
+            "Battle_Tap1"
+        ],
+        "rate_limit": 0
+    },
+    // 女神：同一个 TOUCH 横幅出现在右侧能量槽上 → 点女神按钮
+    "Battle_God": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_touch.png"
+        ],
+        "roi": [
+            1040,
+            535,
+            215,
+            55
+        ],
+        "threshold": 0.8,
+        "action": "Click",
+        "target": [
+            1140,
+            562
+        ],
+        "next": [
+            "Battle_Tap1"
+        ],
+        "rate_limit": 0
+    },
+
+    // ============================================================
+    // 结算：按按钮颜色决定 继续 / 重打 / 结束
+    // ============================================================
+    "Page_Result": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_result.png"
+        ],
+        "roi": [
+            200,
+            595,
+            860,
+            85
+        ],
+        "threshold": 0.85,
+        "action": "DoNothing",
+        // 结算动画还没放完时按钮是暗的，等一下再判颜色，否则会误判成「次数用尽」
+        "pre_delay": 800,
+        "next": [
+            // 结算界面上常压着「开启练习模式」之类的弹窗，先关掉再判按钮
+            "Popup_Confirm",
+            "Result_Next",
+            "Result_Retry",
+            "Result_Town"
+        ],
+        "rate_limit": 0
+    },
+    // 「下一个区域」是蓝色（可用）→ 继续下一关
+    "Result_Next": {
+        "recognition": "ColorMatch",
+        "roi": [
+            700,
+            615,
+            150,
+            45
+        ],
+        "method": 4,
+        "lower": [
+            0,
+            150,
+            180
+        ],
+        "upper": [
+            130,
+            255,
+            255
+        ],
+        "count": 600,
+        "action": "Click",
+        "target": [
+            764,
+            634
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Battle_Tap1"
+        ],
+        "rate_limit": 0
+    },
+    // 「重新挑战」是蓝色 → 同一关再打
+    "Result_Retry": {
+        "recognition": "ColorMatch",
+        "roi": [
+            480,
+            615,
+            160,
+            45
+        ],
+        "method": 4,
+        "lower": [
+            0,
+            150,
+            180
+        ],
+        "upper": [
+            130,
+            255,
+            255
+        ],
+        "count": 600,
+        "action": "Click",
+        "target": [
+            569,
+            634
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Battle_Tap1"
+        ],
+        "rate_limit": 0
+    },
+    // 两个蓝按钮都不可用 → 次数用完，点「回城」然后进删号重置链路
+    "Result_Town": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            999,
+            634
+        ],
+        "post_delay": 1500,
+        "next": [
+            "Reset_Start"
+        ],
+        "rate_limit": 0
+    }
+}

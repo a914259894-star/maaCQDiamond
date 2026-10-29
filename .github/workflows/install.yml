@@ -4,7 +4,7 @@ env:
   # 版本控制：
   # - 设置 VERSION 为空字符串时，下载 latest 版本
   # - 设置 VERSION 为具体版本号时（如 v1.2.3），下载指定版本
-  # MaaFramework 版本需与 agent/requirements.txt 中的 maafw 保持一致
+  # MaaFramework 版本与项目 .venv 中的 maafw 保持一致
   MAAFW_VERSION: "v5.14.3"
   MFAA_VERSION: ""
 
@@ -119,43 +119,6 @@ jobs:
         shell: bash
         run: |
           rm -rf MFA/runtimes
-
-      # ---- Agent 随包 Python 运行时 ----
-      # 终端用户机器上不一定有 Python，这里解压官方 embeddable 发行版到 install/python，
-      # install.py 会把 interface.json 的 agent.child_exec 改写成 ./python/python.exe
-      - name: Setup embedded Python for agent
-        if: matrix.os == 'win' && matrix.arch == 'x86_64'
-        shell: bash
-        run: |
-          set -e
-          PY_VERSION=3.12.10
-          curl -fsSL -o python-embed.zip \
-            "https://www.python.org/ftp/python/${PY_VERSION}/python-${PY_VERSION}-embed-amd64.zip"
-          mkdir -p install/python
-          unzip -q python-embed.zip -d install/python
-          PYZIP=$(basename "$(ls install/python/python*.zip)")
-          PTH_FILE=$(ls install/python/python*._pth)
-          printf '%s\n.\nLib\\site-packages\nimport site\n' "$PYZIP" > "$PTH_FILE"
-          mkdir -p install/python/Lib/site-packages
-          echo "embedded python: $PY_VERSION ($PYZIP)"
-
-      - name: Bundle agent dependencies into embedded Python
-        if: matrix.os == 'win' && matrix.arch == 'x86_64'
-        shell: bash
-        run: |
-          set -e
-          python -m pip install --upgrade pip
-          python -m pip download -r agent/requirements.txt \
-            --platform win_amd64 --python-version 3.12 --only-binary=:all: \
-            --dest wheels
-          for f in wheels/*.whl; do
-            echo "unpack $(basename "$f")"
-            unzip -q -o "$f" -d install/python/Lib/site-packages
-          done
-          test -f install/python/Lib/site-packages/maa/__init__.py
-          test -d install/python/Lib/site-packages/cv2
-          test -d install/python/Lib/site-packages/numpy
-
 
       - name: Install
         shell: bash

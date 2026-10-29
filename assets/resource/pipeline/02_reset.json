@@ -1,0 +1,405 @@
+{
+    // ============================================================
+    // 删号恢复次数链路
+    //
+    // 试炼次数用完后：回主城 → 菜单 → 帐号 → 帐号管理 → 删除帐号
+    //   → 勾选「有 7 天的删除冷静期」→ 确定 → 重新用谷歌账号登录 → 回主循环
+    //
+    // 每个点击都是「点完等下一页标志出现，没出现就在同一页再点一次」，
+    // 因此不会因为一次点击被游戏吞掉就整条链路卡死。
+    // ============================================================
+
+    // 入口：只为把流程收拢到一个节点
+    "Reset_Start": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": [
+            "Reset_Home"
+        ],
+        "rate_limit": 0
+    },
+
+    // 归位到主城菜单：按优先级依次尝试「已在菜单 → 点帐号」「在主城 → 点菜单图标」
+    //   「在试炼/冒险/模式 → 一路返回」「都不认识 → 等一下再看」
+    "Reset_Home": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 400,
+        "next": [
+            "Reset_MenuOpen",
+            "Reset_TapMenuIcon",
+            "Reset_BackTrial",
+            "Reset_BackAdv",
+            "Reset_BackMode",
+            "Reset_Wait"
+        ],
+        "rate_limit": 0,
+        "timeout": -1
+    },
+    // 菜单弹窗里点「帐号」图标（第二排中间）
+    "Reset_MenuOpen": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_menu.png"
+        ],
+        "roi": [
+            560,
+            40,
+            180,
+            80
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            643,
+            441
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Reset_Account"
+        ]
+    },
+    // 主城里点右上角菜单图标
+    "Reset_TapMenuIcon": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_town.png"
+        ],
+        "roi": [
+            0,
+            540,
+            500,
+            150
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1242,
+            45
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Reset_MenuOpen",
+            "Reset_TapMenuIcon"
+        ]
+    },
+    // 试炼页右上角 × → 回冒险
+    "Reset_BackTrial": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_trial.png"
+        ],
+        "roi": [
+            0,
+            60,
+            180,
+            70
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1250,
+            36
+        ],
+        "post_delay": 1400,
+        "next": [
+            "Reset_Home"
+        ]
+    },
+    // 冒险页右上角 × → 回模式选择
+    "Reset_BackAdv": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_adventure.png"
+        ],
+        "roi": [
+            10,
+            0,
+            130,
+            70
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1250,
+            36
+        ],
+        "post_delay": 1400,
+        "next": [
+            "Reset_Home"
+        ]
+    },
+    // 模式选择页左下角「城镇」
+    "Reset_BackMode": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_mode.png"
+        ],
+        "roi": [
+            70,
+            220,
+            150,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            130,
+            600
+        ],
+        "post_delay": 1600,
+        "next": [
+            "Reset_Home"
+        ]
+    },
+    "Reset_Wait": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 800,
+        "next": [
+            "Reset_Home"
+        ],
+        "rate_limit": 0
+    },
+
+    // 帐号弹窗 → 点右下「帐号管理」
+    "Reset_Account": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_account.png"
+        ],
+        "roi": [
+            520,
+            540,
+            420,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            826,
+            587
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Reset_Accman",
+            "Reset_Account"
+        ]
+    },
+    // 账号管理弹窗 → 点红色「删除账号」
+    "Reset_Accman": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_accman.png"
+        ],
+        "roi": [
+            540,
+            40,
+            260,
+            90
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            747,
+            336
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Reset_Delete",
+            "Reset_Accman"
+        ]
+    },
+
+    // 删除确认页：先看冷静期勾选条是不是绿的（绿 = 已勾选，可以继续）
+    "Reset_Delete": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_delete.png"
+        ],
+        "roi": [
+            530,
+            110,
+            260,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "DoNothing",
+        "post_delay": 0,
+        "next": [
+            "Reset_DeleteChecked",
+            "Reset_TapCheckbox"
+        ],
+        "rate_limit": 0
+    },
+    // 勾选条是绿色 → 说明「7 天冷静期」已勾上（这是删号后能撤销的前提）
+    "Reset_DeleteChecked": {
+        "recognition": "ColorMatch",
+        "roi": [
+            470,
+            415,
+            340,
+            55
+        ],
+        "method": 4,
+        "lower": [
+            85,
+            110,
+            40
+        ],
+        "upper": [
+            170,
+            200,
+            115
+        ],
+        "count": 4000,
+        "action": "DoNothing",
+        "next": [
+            "Reset_Confirm"
+        ],
+        "rate_limit": 0
+    },
+    // 灰的 → 点一下勾选条，回上一层重新判断
+    "Reset_TapCheckbox": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_delete.png"
+        ],
+        "roi": [
+            530,
+            110,
+            260,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            640,
+            442
+        ],
+        "post_delay": 500,
+        "next": [
+            "Reset_Delete"
+        ]
+    },
+    // 点「确定」
+    "Reset_Confirm": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_delete.png"
+        ],
+        "roi": [
+            530,
+            110,
+            260,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            757,
+            575
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Reset_AfterDelete"
+        ]
+    },
+
+    // 确定之后状态不固定：可能直接回登录页，也可能先弹一个确认框
+    "Reset_AfterDelete": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 1000,
+        "next": [
+            "Reset_Revoke",
+            "Popup_Confirm",
+            "Reset_Login",
+            "Reset_Chooser",
+            "Reset_AfterDelete"
+        ],
+        "rate_limit": 500,
+        "timeout": -1
+    },
+    // 游戏登录页 → 点 «Sign in with Google»
+    "Reset_Login": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_login.png"
+        ],
+        "roi": [
+            530,
+            110,
+            260,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            640,
+            240
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Reset_Chooser",
+            "Reset_Login"
+        ]
+    },
+    // 谷歌「选择账号」列表 → 点最后一行的邮箱（含 @ 的最后一行）
+    "Reset_Chooser": {
+        "recognition": "OCR",
+        "expected": [
+            ".+@.+"
+        ],
+        "roi": [
+            300,
+            320,
+            680,
+            250
+        ],
+        "threshold": 0.3,
+        "order_by": "Vertical",
+        "index": -1,
+        "action": "Click",
+        "target": true,
+        "post_delay": 3000,
+        "next": [
+            "Reset_AfterLogin"
+        ]
+    },
+    // 登录完成后可能弹「撤销删除」，也可能直接进游戏；交给 Main 正常跑
+    "Reset_AfterLogin": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 1000,
+        "next": [
+            "Reset_Revoke",
+            "Popup_Confirm",
+            "Main"
+        ],
+        "rate_limit": 500,
+        "timeout": -1
+    },
+    // 冷静期撤销：登录后如果提示「账号将被删除 / 是否撤销」，点撤销
+    "Reset_Revoke": {
+        "recognition": "OCR",
+        "expected": [
+            "撤销",
+            "取消删除",
+            "恢复账号"
+        ],
+        "roi": [
+            320,
+            250,
+            640,
+            320
+        ],
+        "threshold": 0.3,
+        "action": "Click",
+        "target": true,
+        "post_delay": 2500,
+        "next": [
+            "Main"
+        ]
+    }
+}

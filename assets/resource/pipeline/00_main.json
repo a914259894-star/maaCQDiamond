@@ -1,0 +1,315 @@
+{
+    // ============================================================
+    // 主循环：一个分发节点 + 每页一个识别节点
+    //   每轮截图 → 依次比对下面所有页面的标志 → 命中哪个就执行哪个页面的动作
+    //   → 动作完回到 Main，重新截图。认不出任何页面时由 Wait 兜底等待。
+    //
+    // 这样每一步都是独立的「识别 → 点击」：某一步没点中不会有副作用，
+    // 下一轮自然重试；也不会因为某个节点识别超时就把整个任务判失败。
+    // ============================================================
+    "Main": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": [
+            // 弹窗优先级最高：它们会盖住底下的页面
+            "Popup_Quiz",
+            "Popup_Confirm",
+            "Popup_CheckIn",
+            "Popup_Notice",
+            // 战斗、结算这类"能动"的页面优先
+            "Page_Battle",
+            "Page_Result",
+            // 正常流程页面
+            "Page_TeamSelect",
+            "Page_TeamEdit",
+            "Page_Trial",
+            "Page_Adventure",
+            "Page_Mode",
+            "Page_Town",
+            "Page_Title",
+            // 谁都认不出（加载、转场）→ 等一下再看
+            "Wait"
+        ],
+        "rate_limit": 0
+    },
+    // 兜底：DirectHit 必定命中，等一会儿回主循环
+    "Wait": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 600,
+        "next": [
+            "Main"
+        ],
+        "rate_limit": 0
+    },
+
+    // ============================================================
+    // 正常流程各页面
+    // ============================================================
+    // 标题画面：点一下进入游戏
+    "Page_Title": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "TitleBottom.png"
+        ],
+        "roi": [
+            340,
+            655,
+            560,
+            50
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            640,
+            420
+        ],
+        "post_delay": 1000,
+        "next": [
+            "Main"
+        ]
+    },
+    // 主城：右下角「开始」→ 进入模式选择
+    "Page_Town": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_town.png"
+        ],
+        "roi": [
+            0,
+            540,
+            500,
+            150
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1156,
+            645
+        ],
+        "post_delay": 900,
+        "next": [
+            "Main"
+        ]
+    },
+    // 模式选择：点「冒险」传送门
+    "Page_Mode": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_mode.png"
+        ],
+        "roi": [
+            70,
+            220,
+            150,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            150,
+            430
+        ],
+        "post_delay": 900,
+        "next": [
+            "Main"
+        ]
+    },
+    // 冒险关卡列表：点「试炼」卡片
+    "Page_Adventure": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_adventure.png"
+        ],
+        "roi": [
+            10,
+            0,
+            130,
+            70
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            936,
+            460
+        ],
+        "post_delay": 1000,
+        "next": [
+            "Main"
+        ]
+    },
+    // 试炼页：先看右下「开始」按钮是不是亮的
+    //   亮（蓝）→ 点它开打
+    //   灰（次数用完）→ 停任务提示
+    //   两种都不匹配 → 什么都不做，回主循环重新识别，避免误判
+    "Page_Trial": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_trial.png"
+        ],
+        "roi": [
+            0,
+            60,
+            180,
+            70
+        ],
+        "threshold": 0.85,
+        "action": "DoNothing",
+        "next": [
+            "Trial_Start",
+            "Trial_NoCount"
+        ]
+    },
+    "Trial_Start": {
+        "recognition": "ColorMatch",
+        "roi": [
+            1120,
+            620,
+            130,
+            50
+        ],
+        "method": 4,
+        "lower": [
+            0,
+            150,
+            180
+        ],
+        "upper": [
+            130,
+            255,
+            255
+        ],
+        "count": 1000,
+        "action": "Click",
+        "target": [
+            1187,
+            658
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Main"
+        ]
+    },
+    // 「开始」是灰的 → 本次试炼次数用完了，进删号重置链路
+    "Trial_NoCount": {
+        "recognition": "ColorMatch",
+        "roi": [
+            1120,
+            620,
+            130,
+            50
+        ],
+        "method": 4,
+        "lower": [
+            135,
+            130,
+            125
+        ],
+        "upper": [
+            185,
+            175,
+            165
+        ],
+        "count": 1000,
+        "action": "DoNothing",
+        "next": [
+            "Reset_Start"
+        ]
+    },
+    // 「灵魂二重奏」队伍编成：右下「开始」
+    //   蓝 → 队伍已配好，点；灰 → 队伍是空的，点也没用，停下让人配队
+    "Page_TeamEdit": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_team_edit.png"
+        ],
+        "roi": [
+            150,
+            10,
+            250,
+            70
+        ],
+        "threshold": 0.85,
+        "action": "DoNothing",
+        "next": [
+            "TeamEdit_Start",
+            "TeamEdit_NoTeam"
+        ]
+    },
+    "TeamEdit_Start": {
+        "recognition": "ColorMatch",
+        "roi": [
+            995,
+            625,
+            115,
+            45
+        ],
+        "method": 4,
+        "lower": [
+            0,
+            150,
+            180
+        ],
+        "upper": [
+            130,
+            255,
+            255
+        ],
+        "count": 1000,
+        "action": "Click",
+        "target": [
+            1050,
+            647
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Main"
+        ]
+    },
+    "TeamEdit_NoTeam": {
+        "recognition": "ColorMatch",
+        "roi": [
+            995,
+            625,
+            115,
+            45
+        ],
+        "method": 4,
+        "lower": [
+            135,
+            130,
+            125
+        ],
+        "upper": [
+            185,
+            175,
+            165
+        ],
+        "count": 1000,
+        "action": "StopTask",
+        "next": []
+    },
+    // 「选择队伍」：右下「选择」
+    "Page_TeamSelect": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_team_select.png"
+        ],
+        "roi": [
+            20,
+            0,
+            200,
+            70
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1029,
+            636
+        ],
+        "post_delay": 1000,
+        "next": [
+            "Main"
+        ]
+    }
+}
