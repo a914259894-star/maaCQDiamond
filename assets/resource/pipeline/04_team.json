@@ -1,0 +1,151 @@
+{
+    "Team_Preset": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "TeamPreset.png"
+        ],
+        "roi": [
+            0,
+            515,
+            110,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "post_delay": 500,
+        "next": [
+            "Team_PresetSelect"
+        ],
+        "timeout": 45000,
+        "rate_limit": 400,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Team_PresetSelect": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "PresetSelect.png"
+        ],
+        "roi": [
+            920,
+            590,
+            340,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "post_delay": 500,
+        "next": [
+            "Team_Start"
+        ],
+        "timeout": 20000,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Team_Start": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "TeamStart.png"
+        ],
+        "roi": [
+            1000,
+            600,
+            240,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "post_delay": 600,
+        "next": [
+            "Team_ConfirmLock",
+            "Battle_Loop",
+            "Team_Start_Retry"
+        ],
+        "timeout": 30000,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Team_ConfirmLock": {
+        "recognition": "OCR",
+        "expected": [
+            "确认",
+            "确定"
+        ],
+        "roi": [
+            380,
+            450,
+            520,
+            220
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "next": [
+            "Battle_Loop"
+        ],
+        "timeout": 60000,
+        "rate_limit": 300,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Team_Start_Retry": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "TeamStart.png"
+        ],
+        "roi": [
+            1000,
+            600,
+            240,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "post_delay": 600,
+        "next": [
+            "Team_ConfirmLock",
+            "Battle_Loop",
+            "Team_Start_Retry"
+        ],
+        "timeout": 30000,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        },
+        "pre_delay": 200,
+        "rate_limit": 400,
+        "max_hit": 8
+    }
+}

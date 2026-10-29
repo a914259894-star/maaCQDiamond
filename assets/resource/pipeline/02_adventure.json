@@ -1,0 +1,148 @@
+{
+    "Adv_Trial": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "AdvTrial.png"
+        ],
+        "roi": [
+            860,
+            430,
+            160,
+            90
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            930,
+            300
+        ],
+        "next": [
+            "Trial_CheckCount"
+        ],
+        "timeout": 30000,
+        "rate_limit": 400,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Trial_CheckCount": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "TrialPractice.png"
+        ],
+        "roi": [
+            830,
+            595,
+            220,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "Custom",
+        "custom_action": "trial_decide",
+        "next": [
+            "Stop_Unexpected"
+        ],
+        "timeout": 30000,
+        "rate_limit": 300,
+        "pre_delay": 400
+    },
+    "Back_FromTrial": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "TrialPractice.png"
+        ],
+        "roi": [
+            830,
+            595,
+            220,
+            110
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1220,
+            41
+        ],
+        "next": [
+            "Back_FromAdventure"
+        ],
+        "timeout": 20000,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Back_FromAdventure": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "AdvTrial.png"
+        ],
+        "roi": [
+            860,
+            430,
+            160,
+            90
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1220,
+            38
+        ],
+        "next": [
+            "Back_FromMode"
+        ],
+        "timeout": 20000,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Back_FromMode": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "ModeAdventure.png"
+        ],
+        "roi": [
+            100,
+            210,
+            160,
+            90
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            124,
+            640
+        ],
+        "next": [
+            "Town_MenuOpen"
+        ],
+        "timeout": 20000,
+        "pre_wait_freezes": {
+            "time": 400,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    }
+}

@@ -138,7 +138,38 @@ def install_agent():
         working_dir / "agent",
         install_path / "agent",
         dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "requirements.txt"),
     )
+
+
+def patch_agent_runtime():
+    """把包内 interface.json 的 agent 指向随包的 Python 运行时。
+
+    开发用的 assets/interface.json 指向项目 .venv（终端用户机器上不存在），
+    发布包里的 Python 由 CI 解压到 install/python，因此这里改写为相对路径。
+    """
+    interface_path = install_path / "interface.json"
+    with open(interface_path, "r", encoding="utf-8") as f:
+        interface = jsonc.load(f)
+
+    agent_cfg = interface.get("agent")
+    if not agent_cfg:
+        return
+
+    if (install_path / "python").exists():
+        agent_cfg["child_exec"] = (
+            "./python/python.exe" if os_name == "win" else "./python/bin/python3"
+        )
+        agent_cfg["child_args"] = ["./agent/main.py"]
+        print(f"Agent runtime -> bundled python: {agent_cfg['child_exec']}")
+    else:
+        # 兜底：使用系统 Python（需自行安装 agent/requirements.txt 中的依赖）
+        agent_cfg["child_exec"] = "python.exe" if os_name == "win" else "python3"
+        agent_cfg["child_args"] = ["./agent/main.py"]
+        print("WARNING: no bundled python found, fallback to system python.")
+
+    with open(interface_path, "w", encoding="utf-8") as f:
+        jsonc.dump(interface, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
@@ -146,5 +177,6 @@ if __name__ == "__main__":
     install_resource()
     install_chores()
     install_agent()
+    patch_agent_runtime()
 
     print(f"Install to {install_path} successfully.")

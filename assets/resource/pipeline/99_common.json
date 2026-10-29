@@ -1,0 +1,69 @@
+{
+    "OCR_Full": {
+        "recognition": "OCR",
+        "expected": [
+            ".*"
+        ],
+        "action": "DoNothing"
+    },
+    "Stop_Unexpected": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "stop_with_alert",
+        "custom_action_param": {
+            "reason": "流程未按预期推进（界面识别超时），请检查游戏画面"
+        }
+    },
+    "Popup_Notice": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "NoticeClose.png"
+        ],
+        "roi": [
+            1040,
+            0,
+            240,
+            80
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1235,
+            40
+        ],
+        "post_delay": 600,
+        "next": [],
+        "timeout": 3000,
+        "rate_limit": 200,
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                0,
+                0,
+                1280,
+                720
+            ]
+        }
+    },
+    "Popup_Error": {
+        "recognition": "OCR",
+        "expected": [
+            "errorCode",
+            "External library",
+            "请稍后再试",
+            "网络不稳定",
+            "断开连接"
+        ],
+        "roi": [
+            300,
+            150,
+            700,
+            420
+        ],
+        "action": "Custom",
+        "custom_action": "dismiss_popup",
+        "post_delay": 700,
+        "rate_limit": 800,
+        "next": []
+    }
+}
