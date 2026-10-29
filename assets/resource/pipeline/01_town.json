@@ -3,6 +3,7 @@
         "recognition": "DirectHit",
         "action": "DoNothing",
         "next": [
+            "[JumpBack]Popup_CheckIn",
             "[JumpBack]Popup_Notice",
             "[JumpBack]Popup_Error",
             "Town_Start"
@@ -21,14 +22,16 @@
         ],
         "threshold": 0.85,
         "action": "Click",
+        "post_delay": 800,
         "next": [
+            "[JumpBack]Popup_CheckIn",
             "[JumpBack]Popup_Notice",
             "Mode_Adventure",
             "[JumpBack]Popup_Error",
             "Town_Start_Retry"
         ],
         "timeout": 60000,
-        "rate_limit": 500,
+        "rate_limit": 700,
         "max_hit": 20,
         "pre_wait_freezes": {
             "time": 400,
@@ -57,12 +60,13 @@
             178,
             390
         ],
+        "post_delay": 800,
         "next": [
             "Adv_Trial",
             "Mode_Adventure_Retry"
         ],
         "timeout": 30000,
-        "rate_limit": 400,
+        "rate_limit": 700,
         "pre_wait_freezes": {
             "time": 400,
             "target": [
@@ -91,23 +95,15 @@
             178,
             390
         ],
+        "post_delay": 800,
         "next": [
             "Adv_Trial",
             "Mode_Adventure_Retry"
         ],
         "timeout": 20000,
-        "rate_limit": 400,
-        "max_hit": 8,
-        "pre_delay": 200,
-        "pre_wait_freezes": {
-            "time": 400,
-            "target": [
-                0,
-                0,
-                1280,
-                720
-            ]
-        }
+        "rate_limit": 700,
+        "max_hit": 5,
+        "pre_delay": 900
     },
     "Town_Start_Retry": {
         "recognition": "TemplateMatch",
@@ -122,24 +118,17 @@
         ],
         "threshold": 0.85,
         "action": "Click",
+        "post_delay": 800,
         "next": [
+            "[JumpBack]Popup_CheckIn",
             "[JumpBack]Popup_Notice",
             "Mode_Adventure",
             "Town_Start_Retry",
             "[JumpBack]Popup_Error"
         ],
         "timeout": 60000,
-        "rate_limit": 400,
-        "max_hit": 8,
-        "pre_wait_freezes": {
-            "time": 400,
-            "target": [
-                0,
-                0,
-                1280,
-                720
-            ]
-        },
-        "pre_delay": 200
+        "rate_limit": 700,
+        "max_hit": 5,
+        "pre_delay": 900
     }
 }

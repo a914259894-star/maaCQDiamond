@@ -12,12 +12,12 @@
         ],
         "threshold": 0.85,
         "action": "Click",
-        "post_delay": 500,
+        "post_delay": 800,
         "next": [
             "Team_PresetSelect"
         ],
         "timeout": 45000,
-        "rate_limit": 400,
+        "rate_limit": 700,
         "pre_wait_freezes": {
             "time": 400,
             "target": [
@@ -41,7 +41,7 @@
         ],
         "threshold": 0.85,
         "action": "Click",
-        "post_delay": 500,
+        "post_delay": 800,
         "next": [
             "Team_Start"
         ],
@@ -69,7 +69,7 @@
         ],
         "threshold": 0.85,
         "action": "Click",
-        "post_delay": 600,
+        "post_delay": 900,
         "next": [
             "Team_ConfirmLock",
             "Battle_Loop",
@@ -99,7 +99,7 @@
             220
         ],
         "action": "Click",
-        "post_delay": 500,
+        "post_delay": 800,
         "next": [
             "Battle_Loop"
         ],
@@ -128,24 +128,15 @@
         ],
         "threshold": 0.85,
         "action": "Click",
-        "post_delay": 600,
+        "post_delay": 900,
         "next": [
             "Team_ConfirmLock",
             "Battle_Loop",
             "Team_Start_Retry"
         ],
         "timeout": 30000,
-        "pre_wait_freezes": {
-            "time": 400,
-            "target": [
-                0,
-                0,
-                1280,
-                720
-            ]
-        },
-        "pre_delay": 200,
-        "rate_limit": 400,
-        "max_hit": 8
+        "pre_delay": 1200,
+        "rate_limit": 700,
+        "max_hit": 3
     }
 }

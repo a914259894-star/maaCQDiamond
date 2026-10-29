@@ -45,6 +45,78 @@
             ]
         }
     },
+    "Popup_Quiz": {
+        // 试炼页会弹「惊喜问答」：四个角色依次跑过，要回答右侧角色排第几。
+        // 答错会触发「无法进入！一定时间内无法进入」的冷却（实测从 43 秒涨到 8 分钟），
+        // 自动乱猜只会越来越糟，所以这里停任务交给人工。
+        "recognition": "TemplateMatch",
+        "template": [
+            "SurpriseQuiz.png"
+        ],
+        "roi": [
+            300,
+            0,
+            700,
+            160
+        ],
+        "threshold": 0.85,
+        "action": "Custom",
+        "custom_action": "stop_with_alert",
+        "custom_action_param": {
+            "reason": "试炼页弹出了「惊喜问答」答题，答错会被限制进入一定时间。请手动答完再重新启动任务"
+        },
+        "timeout": 3000,
+        "rate_limit": 300
+    },
+    "Popup_Unable": {
+        // 「无法进入！一定时间内无法进入。」—— 点确定关掉，回到试炼关卡页
+        "recognition": "OCR",
+        "expected": [
+            "无法进入",
+            "一定时间内"
+        ],
+        "roi": [
+            400,
+            120,
+            500,
+            260
+        ],
+        "action": "Click",
+        "target": [
+            640,
+            548
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Trial_SelectTeam"
+        ],
+        "timeout": 4000,
+        "rate_limit": 800
+    },
+    "Popup_CheckIn": {
+        // 每日签到：登录后盖在主城上（「每日签到！」和「快乐CQ每一天！」两个页面都会出现），
+        // 用左侧「签到奖励」标签识别，点右上 × 关闭后仍在主城，可 JumpBack 回原流程
+        "recognition": "TemplateMatch",
+        "template": [
+            "CheckInPanel.png"
+        ],
+        "roi": [
+            0,
+            0,
+            300,
+            150
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            1231,
+            41
+        ],
+        "post_delay": 900,
+        "next": [],
+        "timeout": 3000,
+        "rate_limit": 300
+    },
     "Popup_Error": {
         "recognition": "OCR",
         "expected": [

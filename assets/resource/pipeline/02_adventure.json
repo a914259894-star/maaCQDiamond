@@ -16,12 +16,14 @@
             930,
             300
         ],
+        "post_delay": 900,
         "next": [
+            "Popup_Quiz",
             "Trial_CheckCount",
             "Adv_Trial_Retry"
         ],
         "timeout": 30000,
-        "rate_limit": 400,
+        "rate_limit": 700,
         "pre_wait_freezes": {
             "time": 400,
             "target": [
@@ -50,23 +52,16 @@
             930,
             300
         ],
+        "post_delay": 900,
         "next": [
+            "Popup_Quiz",
             "Trial_CheckCount",
             "Adv_Trial_Retry"
         ],
         "timeout": 20000,
-        "rate_limit": 400,
-        "max_hit": 8,
-        "pre_delay": 200,
-        "pre_wait_freezes": {
-            "time": 400,
-            "target": [
-                0,
-                0,
-                1280,
-                720
-            ]
-        }
+        "rate_limit": 900,
+        "max_hit": 3,
+        "pre_delay": 1200
     },
     "Trial_CheckCount": {
         "recognition": "TemplateMatch",

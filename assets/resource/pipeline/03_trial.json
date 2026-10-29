@@ -16,8 +16,9 @@
             150,
             285
         ],
-        "post_delay": 400,
+        "post_delay": 800,
         "next": [
+            "Popup_Quiz",
             "Trial_Start"
         ],
         "timeout": 20000,
@@ -48,13 +49,14 @@
             1150,
             655
         ],
-        "post_delay": 600,
+        "post_delay": 900,
         "next": [
+            "Popup_Quiz",
             "Team_Preset",
             "Trial_Start_Retry"
         ],
         "timeout": 45000,
-        "rate_limit": 400,
+        "rate_limit": 700,
         "pre_wait_freezes": {
             "time": 400,
             "target": [
@@ -82,23 +84,15 @@
             1150,
             655
         ],
-        "post_delay": 600,
+        "post_delay": 900,
         "next": [
+            "Popup_Quiz",
             "Team_Preset",
             "Trial_Start_Retry"
         ],
         "timeout": 45000,
-        "rate_limit": 400,
-        "pre_wait_freezes": {
-            "time": 400,
-            "target": [
-                0,
-                0,
-                1280,
-                720
-            ]
-        },
-        "pre_delay": 200,
-        "max_hit": 8
+        "rate_limit": 700,
+        "pre_delay": 1200,
+        "max_hit": 3
     }
 }
