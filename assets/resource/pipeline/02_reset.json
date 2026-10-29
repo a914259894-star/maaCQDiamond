@@ -302,20 +302,61 @@
         ],
         "post_delay": 2000,
         "next": [
-            "Reset_AfterDelete"
+            "Reset_AfterDelete",
+            "Reset_Confirm"
         ]
     },
 
-    // 确定之后状态不固定：可能直接回登录页，也可能先弹一个确认框
+    // 视频 215.5s：点确定后会再弹「确认删除账户 / 真的要退出吗？」，
+    // 按钮是「取消 / 确认」。OCR 只认「确认」二字（第一页的按钮叫「确定」，不会误触），
+    // roi 收在按钮一行，避免碰到正文。
+    "Reset_SecondConfirm": {
+        "recognition": "OCR",
+        "expected": [
+            "确认"
+        ],
+        "roi": [
+            380,
+            490,
+            540,
+            110
+        ],
+        "threshold": 0.3,
+        "action": "Click",
+        "target": true,
+        "post_delay": 2000,
+        "next": [
+            "Reset_ExitWait",
+            "Reset_SecondConfirm"
+        ]
+    },
+
+    // 点完确认后游戏退出重启（视频 217-219s：账号管理弹窗 → 退出动画 → LOAD），
+    // 这里单纯等它落到登录页
+    "Reset_ExitWait": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 2500,
+        "next": [
+            "Reset_Login",
+            "Reset_Chooser",
+            "Reset_Revoke",
+            "Reset_ExitWait"
+        ],
+        "rate_limit": 0
+    },
+
+    // 确定之后状态不固定：可能弹第二层确认，也可能已在退出/登录途中
     "Reset_AfterDelete": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "pre_delay": 1000,
+        "pre_delay": 800,
         "next": [
-            "Reset_Revoke",
-            "Popup_Confirm",
+            "Reset_SecondConfirm",
+            "Reset_Delete",
             "Reset_Login",
             "Reset_Chooser",
+            "Reset_Revoke",
             "Reset_AfterDelete"
         ],
         "rate_limit": 500,
@@ -345,7 +386,9 @@
             "Reset_Login"
         ]
     },
-    // 谷歌「选择账号」列表 → 点最后一行的邮箱（含 @ 的最后一行）
+    // 谷歌「选择账号」列表 → 点下面那个邮箱（工作账号在第二行）。
+    // 列表里第一行是另一个号，点错会登进别人的账号，所以这里明确取最后一个 @ 行：
+    // order_by=Vertical 自上而下排序，index=-1 取最后一个（「添加其他账号」不含 @，不会被选中）
     "Reset_Chooser": {
         "recognition": "OCR",
         "expected": [
@@ -364,23 +407,28 @@
         "target": true,
         "post_delay": 3000,
         "next": [
-            "Reset_AfterLogin"
+            "Reset_AfterLogin",
+            "Reset_Chooser"
         ]
     },
-    // 登录完成后可能弹「撤销删除」，也可能直接进游戏；交给 Main 正常跑
+    // 选完号：可能弹「账号删除引导」要撤销（视频 225.5s），
+    // 也可能短暂回到登录页再弹；都不在就走 Main 正常流程
     "Reset_AfterLogin": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "pre_delay": 1000,
+        "pre_delay": 800,
         "next": [
             "Reset_Revoke",
-            "Popup_Confirm",
-            "Main"
+            "Reset_Login",
+            "Reset_Chooser",
+            "Main",
+            "Reset_AfterLogin"
         ],
         "rate_limit": 500,
         "timeout": -1
     },
-    // 冷静期撤销：登录后如果提示「账号将被删除 / 是否撤销」，点撤销
+    // 「账号删除引导 / 该账号处于删除流程中。是否撤销删除？」→ 点「撤销」。
+    // roi 收在两个按钮一行（撤销按钮中心约 744,526），正文里的「撤销删除」不会进来
     "Reset_Revoke": {
         "recognition": "OCR",
         "expected": [
@@ -389,16 +437,17 @@
             "恢复账号"
         ],
         "roi": [
-            320,
-            250,
-            640,
-            320
+            400,
+            480,
+            500,
+            100
         ],
         "threshold": 0.3,
         "action": "Click",
         "target": true,
         "post_delay": 2500,
         "next": [
+            "Reset_Revoke",
             "Main"
         ]
     }
