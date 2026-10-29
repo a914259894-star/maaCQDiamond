@@ -3,7 +3,7 @@
     // 删号恢复次数链路
     //
     // 试炼次数用完后：回主城 → 菜单 → 帐号 → 帐号管理 → 删除帐号
-    //   → 勾选「有 7 天的删除冷静期」→ 确定 → 重新用谷歌账号登录 → 回主循环
+    //   → 校验「有 7 天的删除冷静期」已勾选（未勾选直接停任务）→ 确定 → 重新用谷歌账号登录 → 回主循环
     //
     // 每个点击都是「点完等下一页标志出现，没出现就在同一页再点一次」，
     // 因此不会因为一次点击被游戏吞掉就整条链路卡死。
@@ -228,7 +228,7 @@
         "post_delay": 0,
         "next": [
             "Reset_DeleteChecked",
-            "Reset_TapCheckbox"
+            "Reset_NotChecked"
         ],
         "rate_limit": 0
     },
@@ -259,8 +259,9 @@
         ],
         "rate_limit": 0
     },
-    // 灰的 → 点一下勾选条，回上一层重新判断
-    "Reset_TapCheckbox": {
+    // 勾选条不是绿色（未勾选）→ 按用户要求直接停任务，由人工判断后再跑。
+    // 不自动去勾：勾错状态提交删除的风险不可接受。
+    "Reset_NotChecked": {
         "recognition": "TemplateMatch",
         "template": [
             "m_delete.png"
@@ -272,15 +273,8 @@
             110
         ],
         "threshold": 0.85,
-        "action": "Click",
-        "target": [
-            640,
-            442
-        ],
-        "post_delay": 500,
-        "next": [
-            "Reset_Delete"
-        ]
+        "action": "StopTask",
+        "next": []
     },
     // 点「确定」
     "Reset_Confirm": {
