@@ -294,6 +294,10 @@
             "Main"
         ]
     },
+    // 编队页「开始」灰 = 队伍是空的，不是没次数。
+    // 正确动作是点左侧绿色「队伍」按钮（中心 48,562，实测自编队页截图，
+    // 它下方 y613-676 是「勇士」按钮，别点串）→ 弹出预设列表 → Page_TeamSelect 点「选择」
+    // → 回编队页开始变蓝 → TeamEdit_Start。
     "TeamEdit_NoTeam": {
         "recognition": "ColorMatch",
         "roi": [
@@ -314,8 +318,15 @@
             165
         ],
         "count": 1000,
-        "action": "StopTask",
-        "next": []
+        "action": "Click",
+        "target": [
+            48,
+            562
+        ],
+        "post_delay": 1500,
+        "next": [
+            "Main"
+        ]
     },
     // 「选择队伍」：右下「选择」
     "Page_TeamSelect": {
