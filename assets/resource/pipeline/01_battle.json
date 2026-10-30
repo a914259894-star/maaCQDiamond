@@ -1,10 +1,15 @@
 {
     // ============================================================
     // 战斗：确认进入战斗后，就一直盲点最右侧方块；
-    //       每点几下识别一次领主 / 女神进度条上有没有 TOUCH，有就点。
+    //       每轮盲点之间识别一次领主 / 女神进度条上有没有 TOUCH，有就点。
     //
-    // 连点 3 次再识别 1 次：DirectHit 节点不需要截图，所以这 3 次点击几乎无间隔，
-    // 一轮下来约 0.2 秒，实际点击频率 10+ 次/秒，同时又不会漏掉 TOUCH。
+    // 实测（17:13 debug 日志）：一轮 7 连点仅耗时 ~0.3s，而每轮之间的
+    // 识别+节点调度固定开销 ~1.6s，整体只有 ~3.5 次点击/秒。
+    // v2.0.6 把每轮盲点加到 14 次（Tap1..Tap15），点击频率提升到 ~7 次/秒，
+    // TOUCH 出现后的最长响应延迟基本不变（一轮识别周期 ~2.2s）。
+    //
+    // 领主 TOUCH 可能连续触发（x3），所以点完领主立刻在同一帧再查女神，
+    // 点完女神也立刻回查领主；两个横幅都消失才回去继续盲点。
     // ============================================================
     "Page_Battle": {
         "recognition": "TemplateMatch",
@@ -123,6 +128,97 @@
             634
         ],
         "next": [
+            "Battle_Tap9"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap9": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap10"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap10": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap11"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap11": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap12"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap12": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap13"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap13": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap14"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap14": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap15"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap15": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
@@ -132,17 +228,19 @@
         "post_delay": 0
     },
 
-    // 领主：进度条上出现 TOUCH 横幅 → 点领主按钮
+    // 领主：进度条上出现 TOUCH 横幅 → 点领主按钮。
+    // 实测横幅左缘可达 x≈731，模板宽 166px，旧 roi x755 起根本装不下模板（漏检），
+    // v2.0.6 放宽到 x690-990
     "Battle_Lord": {
         "recognition": "TemplateMatch",
         "template": [
             "m_touch.png"
         ],
         "roi": [
-            755,
-            535,
-            200,
-            55
+            690,
+            525,
+            300,
+            70
         ],
         "threshold": 0.8,
         "action": "Click",
@@ -151,21 +249,25 @@
             562
         ],
         "next": [
+            "Battle_God",
             "Battle_Tap1"
         ],
         "rate_limit": 0
     },
-    // 女神：同一个 TOUCH 横幅出现在右侧能量槽上 → 点女神按钮
+    // 女神：蓝色 TOUCH 横幅出现在右侧能量槽上 → 点女神按钮。
+    // v2.0.6 关键修复：蓝色横幅和领主的红色横幅颜色不同，旧红模板在蓝横幅上
+    // 只能到 0.54，永远够不到 0.8 阈值——这就是「女神不点了」的根因。
+    // 新模板 m_touch_god.png 裁自真实蓝横幅：正例 1.0 / 负例 ≤0.43
     "Battle_God": {
         "recognition": "TemplateMatch",
         "template": [
-            "m_touch.png"
+            "m_touch_god.png"
         ],
         "roi": [
-            1040,
-            535,
-            215,
-            55
+            1000,
+            525,
+            270,
+            70
         ],
         "threshold": 0.8,
         "action": "Click",
@@ -174,6 +276,7 @@
             562
         ],
         "next": [
+            "Battle_Lord",
             "Battle_Tap1"
         ],
         "rate_limit": 0
@@ -198,7 +301,10 @@
         // 结算动画还没放完时按钮是暗的，等一下再判颜色，否则会误判成「次数用尽」
         "pre_delay": 800,
         "next": [
-            // 结算界面上常压着「开启练习模式」之类的弹窗，先关掉再判按钮
+            // 结算界面上常压着「开启练习模式」之类的弹窗：先取消练习弹窗，
+            // 千万不能让 Popup_Confirm 把它确认了（练习模式不消耗次数）
+            "Popup_Practice",
+            "Popup_PracticeIntro",
             "Popup_Confirm",
             "Result_Next",
             "Result_Retry",

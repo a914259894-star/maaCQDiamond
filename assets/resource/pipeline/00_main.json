@@ -13,6 +13,8 @@
         "next": [
             // 弹窗优先级最高：它们会盖住底下的页面
             "Popup_Quiz",
+            "Popup_Practice",
+            "Popup_PracticeIntro",
             "Popup_Confirm",
             "Popup_CheckIn",
             "Popup_Notice",
@@ -143,10 +145,9 @@
             "Main"
         ]
     },
-    // 试炼页：开始按钮的灰色有两种成因，必须分开处理
-    //   1) 「1组」没选中 → 灰。先点左侧「1组」标签，选中后按钮才变蓝
-    //   2) 次数用完（按钮上方红字「还剩0次」）→ 灰。进删号重置链路
-    // 顺序：蓝 → 直接开打；1组未选中 → 去点 1组；都否 → OCR 确认「0次」才删号
+    // 试炼页：开始按钮灰色有多种成因，不再逐一猜颜色。
+    // 规则（用户钦定）：蓝 → 直接开打；OCR 读到「还剩0次」→ 删号；
+    // 其余情况一律先点一下「1组」（重复点不会取消选中），点完回来按钮自然变蓝
     "Page_Trial": {
         "recognition": "TemplateMatch",
         "template": [
@@ -162,9 +163,8 @@
         "action": "DoNothing",
         "next": [
             "Trial_Start",
-            "Trial_TapGroup",
             "Trial_NoCount",
-            // 都不命中（如按钮正在变色、画面切走）→ 回 Main 重判，绝不许死等超时
+            "Trial_TapGroup",
             "Trial_Wait"
         ]
     },
@@ -207,37 +207,20 @@
             "Main"
         ]
     },
-    // 「1组」标签未选中：标签底色是暗紫 RGB(74,77,123)；选中后变亮紫 RGB(107,105,181)
-    // 实测自 04_trial.png 的 1组/2组 标签行。未选中 → 点「1组」（1280 空间约 40,252）
+    // 蓝/0次都不命中 → 无条件点「1组」（v2.0.6 起不再做颜色判断，
+    // 实测遮罩/变色场景下暗紫判定会漏；重复点击不会取消选中）
     "Trial_TapGroup": {
-        "recognition": "ColorMatch",
-        "roi": [
-            0,
-            238,
-            80,
-            30
-        ],
-        "method": 4,
-        "lower": [
-            60,
-            62,
-            108
-        ],
-        "upper": [
-            88,
-            90,
-            138
-        ],
-        "count": 800,
+        "recognition": "DirectHit",
         "action": "Click",
         "target": [
             40,
             252
         ],
-        "post_delay": 1000,
+        "post_delay": 800,
         "next": [
             "Main"
-        ]
+        ],
+        "rate_limit": 0
     },
     // 1组已选中但按钮仍是灰 → 只剩次数用完这一种可能。
     // 用 OCR 确认按钮上方红字确实是「还剩0次」才进删号。

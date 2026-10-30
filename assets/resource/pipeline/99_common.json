@@ -48,6 +48,72 @@
         ]
     },
 
+    // 「开启练习模式」弹窗：绝不能点确认——练习模式不消耗试炼次数，整个循环会空转。
+    // 用正文「开启练习模式」精确定位（试炼页/结算页其他位置没有这个完整词），
+    // 然后点弹窗按钮行里的「取消」（本游戏弹窗一律左取消右确认，删号流程已验证）
+    "Popup_Practice": {
+        "recognition": "OCR",
+        "expected": [
+            "开启练习模式"
+        ],
+        "roi": [
+            240,
+            120,
+            800,
+            330
+        ],
+        "threshold": 0.3,
+        "action": "DoNothing",
+        "next": [
+            "Popup_Practice_Cancel",
+            "Main"
+        ]
+    },
+    "Popup_Practice_Cancel": {
+        "recognition": "OCR",
+        "expected": [
+            "取消"
+        ],
+        "roi": [
+            380,
+            450,
+            540,
+            220
+        ],
+        "threshold": 0.3,
+        "action": "Click",
+        "target": true,
+        "post_delay": 800,
+        "next": [
+            "Main"
+        ]
+    },
+
+    // 练习模式全屏介绍页（「练习模式可无限制的组合队伍进行挑战。/正在加载中」）：
+    // 会挡住底下所有页面，点击任意处关闭。短语具有唯一性，不会误伤其他界面
+    "Popup_PracticeIntro": {
+        "recognition": "OCR",
+        "expected": [
+            "组合队伍进行挑战"
+        ],
+        "roi": [
+            200,
+            460,
+            880,
+            160
+        ],
+        "threshold": 0.3,
+        "action": "Click",
+        "target": [
+            640,
+            400
+        ],
+        "post_delay": 800,
+        "next": [
+            "Main"
+        ]
+    },
+
     // 每日签到：登录后会盖在主城上，点右上角 × 关掉
     "Popup_CheckIn": {
         "recognition": "TemplateMatch",
