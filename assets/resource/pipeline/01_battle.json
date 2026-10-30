@@ -163,11 +163,13 @@
         ],
         "rate_limit": 0
     },
-    // STAGE FAIL：金色横幅模板 m_fail.png（正例 1.0 / 负例 ≤0.585，裁自真机 FAIL 页）。
-    // v2.0.13 修正：FAIL 页绿色按钮实际在 y598-668（与 CLEAR 页几乎同高！），
-    // 试炼主页绿色块 x218-428 中心 (321,632)（connectedComponents 像素实测）。
-    // 旧坐标 (275,534) 落在按钮上方空白处，空点 120 次无效。
-    // 点完回 Main，由试炼页三分流决定接着打还是删号
+    // STAGE FAIL（战斗失败）：金色横幅模板 m_fail.png（正例 1.0 / 负例 ≤0.585）。
+    // 规则（用户钦定，v2.0.14）：
+    //   「重新挑战」是蓝色（还有次数）→ 点重新挑战；
+    //   「重新挑战」是灰色（次数用完）→ 点返回城镇，回主城后由试炼页 OCR 0次 进删号链。
+    // 像素实测（有次数/无次数两张真实 FAIL 页）：
+    //   重新挑战按钮 x440-651 y595-663：有次数蓝色占比 0.743 / 无次数 0.000
+    //   返回城镇绿色块中心 (992,631)，两种页面位置一致
     "Result_Fail": {
         "recognition": "TemplateMatch",
         "template": [
@@ -180,10 +182,52 @@
             100
         ],
         "threshold": 0.85,
+        "action": "DoNothing",
+        "next": [
+            "Result_Fail_Retry",
+            "Result_Fail_Town"
+        ],
+        "rate_limit": 0
+    },
+    // 「重新挑战」蓝色 → 同一关再打（中心 542,631，connectedComponents 实测）
+    "Result_Fail_Retry": {
+        "recognition": "ColorMatch",
+        "roi": [
+            445,
+            600,
+            200,
+            58
+        ],
+        "method": 4,
+        "lower": [
+            0,
+            150,
+            180
+        ],
+        "upper": [
+            130,
+            255,
+            255
+        ],
+        "count": 4000,
         "action": "Click",
         "target": [
-            321,
-            632
+            542,
+            631
+        ],
+        "post_delay": 1500,
+        "next": [
+            "Main"
+        ],
+        "rate_limit": 0
+    },
+    // 「重新挑战」灰 = 次数用完 → 点「返回城镇」（中心 992,631），回主城走删号链
+    "Result_Fail_Town": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            992,
+            631
         ],
         "post_delay": 1500,
         "next": [
