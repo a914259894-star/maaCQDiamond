@@ -10,6 +10,9 @@
     //
     // 领主 TOUCH 可能连续触发（x3），所以点完领主立刻再查领主+女神，
     // 点完女神也一样；横幅都消失才回去继续盲点。
+    //
+    // 用户实测：反作弊弹窗只在主城出现，战斗链不需要任何弹窗检查——
+    // 战斗链保持纯粹「连点 + TOUCH 判定」，不加门禁，避免多余开销。
     // ============================================================
     "Page_Battle": {
         "recognition": "TemplateMatch",
@@ -63,15 +66,10 @@
             634
         ],
         "next": [
-            "Popup_Abnormal",
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
-            // 门禁：确认还在战斗页才继续盲点。若游戏被反作弊关闭/弹窗遮挡/
-            // 画面切走，全部落空则回 Main 重新定位——否则 DirectHit 死循环
-            // 永远出不了战斗链，Main 上的 Popup_Biubiu 等节点永远没机会跑
-            "Page_Battle",
-            "Main"
+            "Battle_Tap1"
         ],
         "rate_limit": 0,
         "post_delay": 0
@@ -98,12 +96,10 @@
             562
         ],
         "next": [
-            "Popup_Abnormal",
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
-            "Page_Battle",
-            "Main"
+            "Battle_Tap1"
         ],
         "rate_limit": 0
     },
@@ -129,12 +125,10 @@
             562
         ],
         "next": [
-            "Popup_Abnormal",
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
-            "Page_Battle",
-            "Main"
+            "Battle_Tap1"
         ],
         "rate_limit": 0
     },
