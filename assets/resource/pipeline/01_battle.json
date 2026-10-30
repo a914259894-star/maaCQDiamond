@@ -164,7 +164,10 @@
         "rate_limit": 0
     },
     // STAGE FAIL：金色横幅模板 m_fail.png（正例 1.0 / 负例 ≤0.585，裁自真机 FAIL 页）。
-    // 「试炼主页」绿色按钮中心 (275,534)。点完回 Main，由试炼页三分流决定接着打还是删号
+    // v2.0.13 修正：FAIL 页绿色按钮实际在 y598-668（与 CLEAR 页几乎同高！），
+    // 试炼主页绿色块 x218-428 中心 (321,632)（connectedComponents 像素实测）。
+    // 旧坐标 (275,534) 落在按钮上方空白处，空点 120 次无效。
+    // 点完回 Main，由试炼页三分流决定接着打还是删号
     "Result_Fail": {
         "recognition": "TemplateMatch",
         "template": [
@@ -179,8 +182,8 @@
         "threshold": 0.85,
         "action": "Click",
         "target": [
-            275,
-            534
+            321,
+            632
         ],
         "post_delay": 1500,
         "next": [
