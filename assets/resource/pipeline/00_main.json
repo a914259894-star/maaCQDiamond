@@ -29,8 +29,9 @@
             "Page_Mode",
             "Page_Town",
             "Page_Title",
-            // 删号链路中的特殊画面（登录页/谷歌选号/撤销弹窗）：
+            // 删号链路中的特殊画面（登录页/谷歌选号/撤销弹窗/误入手动登录页）：
             // 撤销弹窗 OCR 偶发漏读时若不在这里兜住，流程会困在 Wait 里空转
+            "Reset_Signin",
             "Reset_Revoke",
             "Reset_Chooser",
             "Reset_Login",

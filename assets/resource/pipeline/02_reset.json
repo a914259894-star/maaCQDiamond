@@ -390,10 +390,56 @@
             "Reset_AfterLogin"
         ]
     },
-    // 谷歌「选择账号」列表 → 点下面那个邮箱（工作账号在第二行）。
-    // 列表里第一行是另一个号，点错会登进别人的账号，所以这里明确取最后一个 @ 行：
-    // order_by=Vertical 自上而下排序，index=-1 取最后一个（「添加其他账号」不含 @，不会被选中）
+    // 谷歌「选择账号」页 —— 三层结构（v2.0.12）：
+    //   1. Reset_Chooser 只做页面识别（认标题「选择账号」），分派给具体点击节点
+    //   2. Reset_Chooser_Frost 优先：OCR 认目标账号名「frost」，点名字行=行的中部，
+    //      离行边界最远（实测 20:04 邮箱行点击被列表动画/位移吞掉，点进了「添加其他帐号」，
+    //      Google 进入手动登录页「邮箱或电话号码/创建账号」）
+    //   3. Reset_Chooser_Email 兜底：认含 @ 的最后一行（顺序 Vertical + index -1）
+    // 另有 Reset_Signin 恢复节点：误进手动登录页时按 BACK 返回选号页重选
     "Reset_Chooser": {
+        "recognition": "OCR",
+        "expected": [
+            "选择账号",
+            "选择帐号"
+        ],
+        "roi": [
+            300,
+            300,
+            680,
+            90
+        ],
+        "threshold": 0.3,
+        "action": "DoNothing",
+        "next": [
+            "Reset_Chooser_Frost",
+            "Reset_Chooser_Email",
+            "Reset_Chooser"
+        ],
+        "rate_limit": 0
+    },
+    "Reset_Chooser_Frost": {
+        "recognition": "OCR",
+        "expected": [
+            "frost"
+        ],
+        "roi": [
+            300,
+            320,
+            680,
+            250
+        ],
+        "threshold": 0.3,
+        "action": "Click",
+        "target": true,
+        "post_delay": 3000,
+        "next": [
+            "Reset_AfterLogin",
+            "Reset_Chooser"
+        ],
+        "rate_limit": 0
+    },
+    "Reset_Chooser_Email": {
         "recognition": "OCR",
         "expected": [
             ".+@.+"
@@ -413,15 +459,43 @@
         "next": [
             "Reset_AfterLogin",
             "Reset_Chooser"
-        ]
+        ],
+        "rate_limit": 0
+    },
+    // 误入 Google 手动登录页（点了「添加其他帐号」）→ 按 BACK 返回选号页重选
+    // BACK 键码 4（Android KeyEvent）
+    "Reset_Signin": {
+        "recognition": "OCR",
+        "expected": [
+            "邮箱或电话号码",
+            "创建账号"
+        ],
+        "roi": [
+            200,
+            300,
+            880,
+            220
+        ],
+        "threshold": 0.3,
+        "action": "ClickKey",
+        "key": 4,
+        "post_delay": 1500,
+        "next": [
+            "Reset_Chooser",
+            "Reset_Login",
+            "Main"
+        ],
+        "rate_limit": 0
     },
     // 选完号：可能弹「账号删除引导」要撤销（视频 225.5s），
-    // 也可能短暂回到登录页再弹；都不在就走 Main 正常流程
+    // 也可能短暂回到登录页再弹；都不在就走 Main 正常流程。
+    // Reset_Signin 放最前：误入手动登录页立即按 BACK 返回重选
     "Reset_AfterLogin": {
         "recognition": "DirectHit",
         "action": "DoNothing",
         "pre_delay": 800,
         "next": [
+            "Reset_Signin",
             "Reset_Revoke",
             "Reset_Login",
             "Reset_Chooser",
