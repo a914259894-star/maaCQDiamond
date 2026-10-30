@@ -390,56 +390,14 @@
             "Reset_AfterLogin"
         ]
     },
-    // 谷歌「选择账号」页 —— 三层结构（v2.0.12）：
-    //   1. Reset_Chooser 只做页面识别（认标题「选择账号」），分派给具体点击节点
-    //   2. Reset_Chooser_Frost 优先：OCR 认目标账号名「frost」，点名字行=行的中部，
-    //      离行边界最远（实测 20:04 邮箱行点击被列表动画/位移吞掉，点进了「添加其他帐号」，
-    //      Google 进入手动登录页「邮箱或电话号码/创建账号」）
-    //   3. Reset_Chooser_Email 兜底：认含 @ 的最后一行（顺序 Vertical + index -1）
-    // 另有 Reset_Signin 恢复节点：误进手动登录页时按 BACK 返回选号页重选
+    // 谷歌「选择账号」列表 → 点下面那个邮箱（工作账号在第二行）。
+    // v2.0.15 回退到 v2.0.7 的直接逻辑：OCR 认含 @ 的最后一行并点击。
+    // （v2.0.12 的「先认标题再分派」是画蛇添足：标题 roi 是猜的，实际标题
+    // 在 y≈215-240，roi y300-390 罩不住 → 永远认不到 → 整个选号卡死。
+    // 实测截图：标题「选择账号」y≈225，frost 行 y≈397，邮箱行 y≈425。）
+    // order_by=Vertical 自上而下排序，index=-1 取最后一个 @ 行
+    // （「添加其他账号」不含 @，不会被选中）
     "Reset_Chooser": {
-        "recognition": "OCR",
-        "expected": [
-            "选择账号",
-            "选择帐号"
-        ],
-        "roi": [
-            300,
-            300,
-            680,
-            90
-        ],
-        "threshold": 0.3,
-        "action": "DoNothing",
-        "next": [
-            "Reset_Chooser_Frost",
-            "Reset_Chooser_Email",
-            "Reset_Chooser"
-        ],
-        "rate_limit": 0
-    },
-    "Reset_Chooser_Frost": {
-        "recognition": "OCR",
-        "expected": [
-            "frost"
-        ],
-        "roi": [
-            300,
-            320,
-            680,
-            250
-        ],
-        "threshold": 0.3,
-        "action": "Click",
-        "target": true,
-        "post_delay": 3000,
-        "next": [
-            "Reset_AfterLogin",
-            "Reset_Chooser"
-        ],
-        "rate_limit": 0
-    },
-    "Reset_Chooser_Email": {
         "recognition": "OCR",
         "expected": [
             ".+@.+"
