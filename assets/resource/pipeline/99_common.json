@@ -32,23 +32,27 @@
     //   点「确认」→ 游戏自行关闭 → biubiu 放广告（期间 Main→Wait 空转等待）
     //   → biubiu 详情页出现 → Popup_Biubiu 点「打开游戏」
     //   → 游戏重启到 TAP TO START → Page_Title 点掉 → 回主循环。
-    // 模板裁自真机弹窗（正例 1.0 / 负例 ≤0.361）
+    //
+    // v2.0.16：改用 OCR 认「非正常使用」（v2.0.9 的模板裁自 1138x637 窗口截图，
+    // 缩放后与真机 720p 帧有色彩/渲染差异，真机日志 571 次尝试 0 命中）。
+    // OCR 离线实测（同一张弹窗截图）：「非正常使用！」score 0.97、「确认」score 1.0
+    // box [605,524,85,51] → 点击中心 (647,549)
     "Popup_Abnormal": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "m_abnormal.png"
+        "recognition": "OCR",
+        "expected": [
+            "非正常使用"
         ],
         "roi": [
-            450,
-            130,
             400,
-            120
+            120,
+            480,
+            140
         ],
-        "threshold": 0.8,
+        "threshold": 0.3,
         "action": "Click",
         "target": [
-            640,
-            547
+            647,
+            549
         ],
         "post_delay": 2500,
         "next": [
