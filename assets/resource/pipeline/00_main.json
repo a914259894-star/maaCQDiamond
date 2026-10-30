@@ -13,8 +13,6 @@
         "next": [
             // 弹窗优先级最高：它们会盖住底下的页面
             "Popup_Quiz",
-            "Popup_Practice",
-            "Popup_PracticeIntro",
             "Popup_Confirm",
             "Popup_CheckIn",
             "Popup_Notice",

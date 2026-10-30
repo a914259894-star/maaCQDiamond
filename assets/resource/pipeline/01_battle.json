@@ -3,13 +3,13 @@
     // 战斗：确认进入战斗后，就一直盲点最右侧方块；
     //       每轮盲点之间识别一次领主 / 女神进度条上有没有 TOUCH，有就点。
     //
-    // 实测（17:13 debug 日志）：一轮 7 连点仅耗时 ~0.3s，而每轮之间的
-    // 识别+节点调度固定开销 ~1.6s，整体只有 ~3.5 次点击/秒。
-    // v2.0.6 把每轮盲点加到 14 次（Tap1..Tap15），点击频率提升到 ~7 次/秒，
-    // TOUCH 出现后的最长响应延迟基本不变（一轮识别周期 ~2.2s）。
+    // v2.0.6 实测：TOUCH 检查挂在 15 连点之后，识别周期 ~2.2s，用户反馈
+    // 领主/女神「点的太慢」。v2.0.7 改成 3 连点小循环：Tap1→Tap2→Tap3→
+    // 查领主/女神→回 Tap1。TOUCH 出现后的最长响应延迟从 ~2.2s 压到 ~0.3s。
+    // 代价只是每轮多两次模板匹配（同一帧上比较，无额外截图），盲点频率不变。
     //
-    // 领主 TOUCH 可能连续触发（x3），所以点完领主立刻在同一帧再查女神，
-    // 点完女神也立刻回查领主；两个横幅都消失才回去继续盲点。
+    // 领主 TOUCH 可能连续触发（x3），所以点完领主立刻再查领主+女神，
+    // 点完女神也一样；横幅都消失才回去继续盲点。
     // ============================================================
     "Page_Battle": {
         "recognition": "TemplateMatch",
@@ -63,162 +63,6 @@
             634
         ],
         "next": [
-            "Battle_Tap4"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap4": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap5"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap5": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap6"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap6": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap7"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap7": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap8"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap8": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap9"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap9": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap10"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap10": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap11"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap11": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap12"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap12": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap13"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap13": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap14"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap14": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap15"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap15": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
@@ -249,7 +93,9 @@
             562
         ],
         "next": [
+            "Battle_Lord",
             "Battle_God",
+            "Page_Result",
             "Battle_Tap1"
         ],
         "rate_limit": 0
@@ -277,6 +123,8 @@
         ],
         "next": [
             "Battle_Lord",
+            "Battle_God",
+            "Page_Result",
             "Battle_Tap1"
         ],
         "rate_limit": 0
@@ -301,10 +149,6 @@
         // 结算动画还没放完时按钮是暗的，等一下再判颜色，否则会误判成「次数用尽」
         "pre_delay": 800,
         "next": [
-            // 结算界面上常压着「开启练习模式」之类的弹窗：先取消练习弹窗，
-            // 千万不能让 Popup_Confirm 把它确认了（练习模式不消耗次数）
-            "Popup_Practice",
-            "Popup_PracticeIntro",
             "Popup_Confirm",
             "Result_Next",
             "Result_Retry",
