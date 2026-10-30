@@ -150,9 +150,38 @@
         "pre_delay": 800,
         "next": [
             "Popup_Confirm",
+            // STAGE FAIL（战斗失败）：按钮布局和 CLEAR 页完全不同（y≈510-560 vs 615-660），
+            // 下面的颜色判断全部落空、Result_Town 会盲点空白处。必须在它们之前拦截。
+            // 点「试炼主页」回试炼页：还有次数就接着打（按钮蓝），没次数 OCR 0次 进删号
+            "Result_Fail",
             "Result_Next",
             "Result_Retry",
             "Result_Town"
+        ],
+        "rate_limit": 0
+    },
+    // STAGE FAIL：金色横幅模板 m_fail.png（正例 1.0 / 负例 ≤0.585，裁自真机 FAIL 页）。
+    // 「试炼主页」绿色按钮中心 (275,534)。点完回 Main，由试炼页三分流决定接着打还是删号
+    "Result_Fail": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_fail.png"
+        ],
+        "roi": [
+            300,
+            50,
+            700,
+            100
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            275,
+            534
+        ],
+        "post_delay": 1500,
+        "next": [
+            "Main"
         ],
         "rate_limit": 0
     },
