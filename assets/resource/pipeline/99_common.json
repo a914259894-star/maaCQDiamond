@@ -27,6 +27,34 @@
         "next": []
     },
 
+    // 反作弊弹窗（「非正常使用！检测到不正当游戏行为，游戏将被关闭。」）：
+    // 点「确认」后游戏会自行关闭，biubiu 加速器稍后会自动重开到 TAP TO START，
+    // 由 Page_Title 接管。模板裁自真机弹窗（正例 1.0 / 负例 ≤0.361）。
+    // 战斗链里也挂着此节点：弹窗若在战斗中出现，否则要等战斗超时才能自愈
+    "Popup_Abnormal": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_abnormal.png"
+        ],
+        "roi": [
+            450,
+            130,
+            400,
+            120
+        ],
+        "threshold": 0.8,
+        "action": "Click",
+        "target": [
+            640,
+            547
+        ],
+        "post_delay": 2500,
+        "next": [
+            "Main"
+        ],
+        "rate_limit": 0
+    },
+
     // 通用确认框：「队伍锁定」「开启练习模式」（仅提示，只有确认）「删除结束」
     // 等都长这样，统一识别「确认 / 确定」并点它
     "Popup_Confirm": {
