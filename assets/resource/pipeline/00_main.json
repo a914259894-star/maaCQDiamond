@@ -27,6 +27,11 @@
             "Page_Mode",
             "Page_Town",
             "Page_Title",
+            // 删号链路中的特殊画面（登录页/谷歌选号/撤销弹窗）：
+            // 撤销弹窗 OCR 偶发漏读时若不在这里兜住，流程会困在 Wait 里空转
+            "Reset_Revoke",
+            "Reset_Chooser",
+            "Reset_Login",
             // 谁都认不出（加载、转场）→ 等一下再看
             "Wait"
         ],
@@ -158,8 +163,19 @@
         "next": [
             "Trial_Start",
             "Trial_TapGroup",
-            "Trial_NoCount"
+            "Trial_NoCount",
+            // 都不命中（如按钮正在变色、画面切走）→ 回 Main 重判，绝不许死等超时
+            "Trial_Wait"
         ]
+    },
+    "Trial_Wait": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 600,
+        "next": [
+            "Main"
+        ],
+        "rate_limit": 0
     },
     "Trial_Start": {
         "recognition": "ColorMatch",
@@ -261,8 +277,20 @@
         "action": "DoNothing",
         "next": [
             "TeamEdit_Start",
-            "TeamEdit_NoTeam"
+            "TeamEdit_NoTeam",
+            // 都不命中（点完开始后画面切到战斗/加载）→ 回 Main 重判。
+            // v2.0.4 就是这里缺兜底：进战斗后死等 20s 超时，整条任务被判失败
+            "TeamEdit_Wait"
         ]
+    },
+    "TeamEdit_Wait": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 600,
+        "next": [
+            "Main"
+        ],
+        "rate_limit": 0
     },
     "TeamEdit_Start": {
         "recognition": "ColorMatch",
