@@ -67,7 +67,11 @@
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
-            "Battle_Tap1"
+            // 门禁：确认还在战斗页才继续盲点。若游戏被反作弊关闭/弹窗遮挡/
+            // 画面切走，全部落空则回 Main 重新定位——否则 DirectHit 死循环
+            // 永远出不了战斗链，Main 上的 Popup_Biubiu 等节点永远没机会跑
+            "Page_Battle",
+            "Main"
         ],
         "rate_limit": 0,
         "post_delay": 0
@@ -98,7 +102,8 @@
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
-            "Battle_Tap1"
+            "Page_Battle",
+            "Main"
         ],
         "rate_limit": 0
     },
@@ -128,7 +133,8 @@
             "Battle_Lord",
             "Battle_God",
             "Page_Result",
-            "Battle_Tap1"
+            "Page_Battle",
+            "Main"
         ],
         "rate_limit": 0
     },
