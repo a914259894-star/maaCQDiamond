@@ -21,11 +21,16 @@
 
     // 归位到主城菜单：按优先级依次尝试「已在菜单 → 点帐号」「在主城 → 点菜单图标」
     //   「在试炼/冒险/模式 → 一路返回」「都不认识 → 等一下再看」
+    // v2.0.18：弹窗优先。删号链是自循环，不回 Main，反作弊弹窗若不挂进
+    // 这里的 next，弹出后点击全被吃掉、链条永远卡在 TapMenuIcon（v2.0.17 实测卡 26 分钟）。
+    // 弹窗只在主城出现，所以只需挂在城镇级的 Home/TapMenuIcon/Wait 三个节点上。
     "Reset_Home": {
         "recognition": "DirectHit",
         "action": "DoNothing",
         "pre_delay": 400,
         "next": [
+            "Popup_Abnormal",
+            "Popup_Biubiu",
             "Reset_MenuOpen",
             "Reset_TapMenuIcon",
             "Reset_BackTrial",
@@ -81,6 +86,8 @@
         ],
         "post_delay": 1200,
         "next": [
+            "Popup_Abnormal",
+            "Popup_Biubiu",
             "Reset_MenuOpen",
             "Reset_TapMenuIcon",
             "Reset_Home"
@@ -160,6 +167,8 @@
         "action": "DoNothing",
         "pre_delay": 800,
         "next": [
+            "Popup_Abnormal",
+            "Popup_Biubiu",
             "Reset_Home"
         ],
         "rate_limit": 0
