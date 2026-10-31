@@ -9,8 +9,14 @@
     },
 
     // 惊喜问答：四个角色依次跑过，要回答右侧角色排第几。
-    // 答错会被限制进入（实测从 43 秒涨到 8 分钟），自动乱猜只会越来越糟，
-    // 所以这里直接停任务交给人工，答完再重新启动。
+    // 题目和答案是动态的，pipeline 无法可靠作答，而且答错会被限制进入
+    // （实测从 43 秒涨到 8 分钟），所以不能乱猜。
+    //
+    // 处理方式（v2.0.22，用户钦定）：出现就直接杀掉游戏进程，靠「重启掉问答」绕过。
+    //   1) StopApp 按包名关掉游戏（比连按 BACK 干脆，不会停在游戏内的中间页）
+    //   2) 游戏关闭后 sim 退回 biubiu 详情页（与反作弊弹窗点确认后的路径一致）
+    //   3) 回 Main 继续判别 → Popup_Biubiu 认出「打开游戏」→ 点击重开
+    //   4) 游戏重启到 TAP TO START → Page_Title 接回主循环
     "Popup_Quiz": {
         "recognition": "TemplateMatch",
         "template": [
@@ -23,8 +29,13 @@
             160
         ],
         "threshold": 0.85,
-        "action": "StopTask",
-        "next": []
+        "action": "StopApp",
+        "package": "com.nhnent.SKQUEST",
+        "post_delay": 4000,
+        "next": [
+            "Main"
+        ],
+        "rate_limit": 0
     },
 
     // 反作弊弹窗（「非正常使用！检测到不正当游戏行为，游戏将被关闭。」）。
