@@ -8,7 +8,7 @@
     "license": "MIT",
     "welcome": "使用前请确认：游戏已在模拟器中运行并处于「主城」界面。截图方式保持默认即可，本工具不做任何改动。",
     "github": "https://github.com/a914259894-star/maaCQDiamond",
-    "version": "2.0.18",
+    "version": "2.0.19",
     "controller": [
         {
             "name": "模拟器",

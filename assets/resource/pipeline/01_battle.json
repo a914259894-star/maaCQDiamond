@@ -300,6 +300,12 @@
         "rate_limit": 0
     },
     // 两个蓝按钮都不可用 → 次数用完，点「回城」然后进删号重置链路
+    // v2.0.19：next 改为 [Page_Result, Reset_Start]（重试节点模式）。
+    // 原 next=[Reset_Start] 的问题：这是 DirectHit 盲点，页面还在过渡/点击被吞时
+    // 结算页没被点掉，流程却已经钻进删号链 —— 删号链不认识结算页，
+    // 只能 Reset_Home↔Reset_Wait 空转（v2.0.17 真机实测卡死 18 分钟）。
+    // 现在：点完先看结算页底条（m_result）还在不在，在就经 Page_Result 再点一次，
+    // 消失了（已回城）才放行进 Reset_Start。
     "Result_Town": {
         "recognition": "DirectHit",
         "action": "Click",
@@ -309,6 +315,7 @@
         ],
         "post_delay": 1500,
         "next": [
+            "Page_Result",
             "Reset_Start"
         ],
         "rate_limit": 0
