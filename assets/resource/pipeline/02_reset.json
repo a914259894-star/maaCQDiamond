@@ -1,15 +1,33 @@
 {
     // ============================================================
-    // 删号恢复次数链路
+    // 删号流程（v2.0.21 架构重构）
     //
-    // 试炼次数用完后：回主城 → 菜单 → 帐号 → 帐号管理 → 删除帐号
-    //   → 校验「有 7 天的删除冷静期」已勾选（未勾选直接停任务）→ 确定 → 重新用谷歌账号登录 → 回主循环
+    // 【总原则】唯一入口 Main 统一判别页面：每轮截图 → 依次比对所有页面标志
+    //   → 命中哪个就做哪个页面的「一步」动作 → 回 Main 重新判别。
+    //   战斗界面最优先，认不出任何页面由 Wait 兜底。
     //
-    // 每个点击都是「点完等下一页标志出现，没出现就在同一页再点一次」，
-    // 因此不会因为一次点击被游戏吞掉就整条链路卡死。
+    // 本文件只保留两部分：
+    //
+    // A. 回撤段（Reset_*）
+    //    试炼页 ×→ 冒险页 ×→ 模式页「城镇」→ 城镇 →点右上菜单图标
+    //    这是全流程唯一必须依赖「上下文」的一小段，因为「城镇页」有两个
+    //    互相冲突的合法动作：正常流程点右下「开始」去试炼，删号流程点右上
+    //    「菜单」。两者画面完全一样，纯 pipeline 无法区分。
+    //    → 所以只在这一段保留链式推进；**菜单弹窗一出现（Page_Menu）
+    //      立刻交回 Main**，后续全部由统一判别驱动，不再有长自循环。
+    //
+    // B. 删号中段页面（Page_Menu / Page_Account / ... / Page_Revoke）
+    //    这些页面在正常流程里根本不会出现，每个页面的动作唯一、无歧义，
+    //    因此全部挂在 Main 的 next 里，走一步回一次入口。
+    //    好处：任何一步点击被游戏吞掉，下一轮 Main 重新判别到的还是这个页面，
+    //    自然重试；也不会像 v2.0.17/v2.0.19 那样困在链里对错误目标空点到死。
     // ============================================================
 
-    // 入口：只为把流程收拢到一个节点
+    // ============================================================
+    // A. 回撤段：从试炼页退到城镇并打开菜单
+    // ============================================================
+    // 入口：试炼页 OCR 读到「还剩0次」时由 Trial_NoCount 跳进来
+    //   （也可作为 interface.json 里「重置次数（删号）」任务的入口单独调试）
     "Reset_Start": {
         "recognition": "DirectHit",
         "action": "DoNothing",
@@ -19,14 +37,11 @@
         "rate_limit": 0
     },
 
-    // 归位到主城菜单：按优先级依次尝试「已在菜单 → 点帐号」「在主城 → 点菜单图标」
-    //   「在试炼/冒险/模式 → 一路返回」「都不认识 → 等一下再看」
-    // v2.0.18：弹窗优先。删号链是自循环，不回 Main，反作弊弹窗若不挂进
-    // 这里的 next，弹出后点击全被吃掉、链条永远卡在 TapMenuIcon（v2.0.17 实测卡 26 分钟）。
-    // 弹窗只在主城出现，所以只需挂在城镇级的 Home/TapMenuIcon/Wait 三个节点上。
-    // v2.0.20：结算页也要挂。Result_Town 在结算页动画期盲点被吞后流程可能提前
-    // 钻进删号链（v2.0.19 实测卡在 STAGE FAIL 页 27 分钟），挂上 Page_Result
-    // 让删号链认识结算页，由结算页自身的 next 逻辑（重试/回城）处理完再放行。
+    // 回撤段分发：按当前页面决定往哪退一步
+    //   已在菜单 → Page_Menu（命中即交回 Main 接管）
+    //   在城镇   → 点右上角菜单图标
+    //   在试炼/冒险/模式 → 各自点退回上一层
+    //   都不认识 → 等一下再看
     "Reset_Home": {
         "recognition": "DirectHit",
         "action": "DoNothing",
@@ -35,7 +50,7 @@
             "Popup_Abnormal",
             "Popup_Biubiu",
             "Page_Result",
-            "Reset_MenuOpen",
+            "Page_Menu",
             "Reset_TapMenuIcon",
             "Reset_BackTrial",
             "Reset_BackAdv",
@@ -45,32 +60,7 @@
         "rate_limit": 0,
         "timeout": -1
     },
-    // 菜单弹窗里点「帐号」图标（第二排中间）
-    "Reset_MenuOpen": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "m_menu.png"
-        ],
-        "roi": [
-            560,
-            40,
-            180,
-            80
-        ],
-        "threshold": 0.85,
-        "action": "Click",
-        "target": [
-            643,
-            441
-        ],
-        "post_delay": 1200,
-        "next": [
-            "Reset_Account",
-            // 帐号弹窗没弹出来（点击被吞/加载中）→ 回 Reset_Home 重新定位
-            "Reset_Home"
-        ]
-    },
-    // 主城里点右上角菜单图标
+    // 城镇：点右上角菜单图标 (1242,45) → 菜单弹窗
     "Reset_TapMenuIcon": {
         "recognition": "TemplateMatch",
         "template": [
@@ -93,8 +83,6 @@
             "Popup_Abnormal",
             "Popup_Biubiu",
             "Page_Result",
-            "Reset_MenuOpen",
-            "Reset_TapMenuIcon",
             "Reset_Home"
         ]
     },
@@ -118,6 +106,9 @@
         ],
         "post_delay": 1400,
         "next": [
+            "Popup_Abnormal",
+            "Popup_Biubiu",
+            "Page_Result",
             "Reset_Home"
         ]
     },
@@ -141,6 +132,9 @@
         ],
         "post_delay": 1400,
         "next": [
+            "Popup_Abnormal",
+            "Popup_Biubiu",
+            "Page_Result",
             "Reset_Home"
         ]
     },
@@ -164,9 +158,13 @@
         ],
         "post_delay": 1600,
         "next": [
+            "Popup_Abnormal",
+            "Popup_Biubiu",
+            "Page_Result",
             "Reset_Home"
         ]
     },
+    // 回撤段兜底：加载/转场时等一下重新定位
     "Reset_Wait": {
         "recognition": "DirectHit",
         "action": "DoNothing",
@@ -180,8 +178,35 @@
         "rate_limit": 0
     },
 
+    // ============================================================
+    // B. 删号中段页面：挂在 Main 上，走一步回一次入口
+    // ============================================================
+    // 菜单弹窗 → 点第二排中间的「帐号」图标。
+    // 命中这个节点就意味着「删号入口已经打开」，回撤段到此结束。
+    "Page_Menu": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "m_menu.png"
+        ],
+        "roi": [
+            560,
+            40,
+            180,
+            80
+        ],
+        "threshold": 0.85,
+        "action": "Click",
+        "target": [
+            643,
+            441
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Main"
+        ]
+    },
     // 帐号弹窗 → 点右下「帐号管理」
-    "Reset_Account": {
+    "Page_Account": {
         "recognition": "TemplateMatch",
         "template": [
             "m_account.png"
@@ -200,13 +225,11 @@
         ],
         "post_delay": 1200,
         "next": [
-            "Reset_Accman",
-            "Reset_Account",
-            "Reset_Home"
+            "Main"
         ]
     },
     // 账号管理弹窗 → 点红色「删除账号」
-    "Reset_Accman": {
+    "Page_Accman": {
         "recognition": "TemplateMatch",
         "template": [
             "m_accman.png"
@@ -225,14 +248,15 @@
         ],
         "post_delay": 1200,
         "next": [
-            "Reset_Delete",
-            "Reset_Accman",
-            "Reset_Home"
+            "Main"
         ]
     },
-
-    // 删除确认页：先看冷静期勾选条是不是绿的（绿 = 已勾选，可以继续）
-    "Reset_Delete": {
+    // 删除确认页：先校验「7 天冷静期」勾选条是不是绿的
+    //   绿（已勾选，删了也能撤销）→ 才允许点「确定」
+    //   非绿 → 直接停任务交给人工。不自动去勾：勾错状态提交删除的风险不可接受。
+    // 注意：本节点必须排在 Popup_Confirm 之前，否则删除页的「确定」按钮
+    //   会被通用确认框先命中，绕过这段校验。
+    "Page_Delete": {
         "recognition": "TemplateMatch",
         "template": [
             "m_delete.png"
@@ -247,14 +271,13 @@
         "action": "DoNothing",
         "post_delay": 0,
         "next": [
-            "Reset_DeleteChecked",
-            "Reset_NotChecked",
-            "Reset_Home"
+            "Page_Delete_Green",
+            "Page_Delete_Stop"
         ],
         "rate_limit": 0
     },
-    // 勾选条是绿色 → 说明「7 天冷静期」已勾上（这是删号后能撤销的前提）
-    "Reset_DeleteChecked": {
+    // 勾选条是绿色 → 点「确定」(757,575)
+    "Page_Delete_Green": {
         "recognition": "ColorMatch",
         "roi": [
             470,
@@ -274,15 +297,19 @@
             115
         ],
         "count": 4000,
-        "action": "DoNothing",
+        "action": "Click",
+        "target": [
+            757,
+            575
+        ],
+        "post_delay": 2000,
         "next": [
-            "Reset_Confirm"
+            "Main"
         ],
         "rate_limit": 0
     },
-    // 勾选条不是绿色（未勾选）→ 按用户要求直接停任务，由人工判断后再跑。
-    // 不自动去勾：勾错状态提交删除的风险不可接受。
-    "Reset_NotChecked": {
+    // 勾选条不是绿色 → 停任务，等人工确认勾选状态后重跑
+    "Page_Delete_Stop": {
         "recognition": "TemplateMatch",
         "template": [
             "m_delete.png"
@@ -297,35 +324,10 @@
         "action": "StopTask",
         "next": []
     },
-    // 点「确定」
-    "Reset_Confirm": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "m_delete.png"
-        ],
-        "roi": [
-            530,
-            110,
-            260,
-            110
-        ],
-        "threshold": 0.85,
-        "action": "Click",
-        "target": [
-            757,
-            575
-        ],
-        "post_delay": 2000,
-        "next": [
-            "Reset_AfterDelete",
-            "Reset_Confirm"
-        ]
-    },
-
-    // 视频 215.5s：点确定后会再弹「确认删除账户 / 真的要退出吗？」，
-    // 按钮是「取消 / 确认」。OCR 只认「确认」二字（第一页的按钮叫「确定」，不会误触），
+    // 第二层确认弹窗（「确认删除账户 / 真的要退出吗？」按钮为「取消 / 确认」）
+    // OCR 只认「确认」二字：第一页的按钮叫「确定」，不会误触。
     // roi 收在按钮一行，避免碰到正文。
-    "Reset_SecondConfirm": {
+    "Page_Confirm2": {
         "recognition": "OCR",
         "expected": [
             "确认"
@@ -341,46 +343,11 @@
         "target": true,
         "post_delay": 2000,
         "next": [
-            "Reset_ExitWait",
-            "Reset_SecondConfirm"
+            "Main"
         ]
     },
-
-    // 点完确认后游戏退出重启（视频 217-219s：账号管理弹窗 → 退出动画 → LOAD），
-    // 这里单纯等它落到登录页
-    "Reset_ExitWait": {
-        "recognition": "DirectHit",
-        "action": "DoNothing",
-        "pre_delay": 2500,
-        "next": [
-            "Reset_Login",
-            "Reset_Chooser",
-            "Reset_Revoke",
-            // 第二层确认弹窗 OCR 偶发漏读时也要能重试，否则困在自我等待里
-            "Reset_SecondConfirm",
-            "Reset_ExitWait"
-        ],
-        "rate_limit": 0
-    },
-
-    // 确定之后状态不固定：可能弹第二层确认，也可能已在退出/登录途中
-    "Reset_AfterDelete": {
-        "recognition": "DirectHit",
-        "action": "DoNothing",
-        "pre_delay": 800,
-        "next": [
-            "Reset_SecondConfirm",
-            "Reset_Delete",
-            "Reset_Login",
-            "Reset_Chooser",
-            "Reset_Revoke",
-            "Reset_AfterDelete"
-        ],
-        "rate_limit": 500,
-        "timeout": -1
-    },
     // 游戏登录页 → 点 «Sign in with Google»
-    "Reset_Login": {
+    "Page_Login": {
         "recognition": "TemplateMatch",
         "template": [
             "m_login.png"
@@ -399,20 +366,14 @@
         ],
         "post_delay": 2000,
         "next": [
-            "Reset_Chooser",
-            "Reset_Login",
-            // 点完登录后画面在过渡 → 交给 AfterLogin 统一重定向
-            "Reset_AfterLogin"
+            "Main"
         ]
     },
-    // 谷歌「选择账号」列表 → 点下面那个邮箱（工作账号在第二行）。
-    // v2.0.15 回退到 v2.0.7 的直接逻辑：OCR 认含 @ 的最后一行并点击。
-    // （v2.0.12 的「先认标题再分派」是画蛇添足：标题 roi 是猜的，实际标题
-    // 在 y≈215-240，roi y300-390 罩不住 → 永远认不到 → 整个选号卡死。
-    // 实测截图：标题「选择账号」y≈225，frost 行 y≈397，邮箱行 y≈425。）
-    // order_by=Vertical 自上而下排序，index=-1 取最后一个 @ 行
-    // （「添加其他账号」不含 @，不会被选中）
-    "Reset_Chooser": {
+    // 谷歌「选择账号」列表 → 点最后一个含 @ 的邮箱行。
+    // v2.0.15 实测定版：OCR 认含 @ 的行，order_by=Vertical 自上而下，index=-1 取末行
+    // （「添加其他账号」不含 @，不会被选中）。
+    // 教训（v2.0.12）：不要加「先认标题再分派」的门——标题 roi 是猜的，罩不住就全卡死。
+    "Page_Chooser": {
         "recognition": "OCR",
         "expected": [
             ".+@.+"
@@ -430,14 +391,13 @@
         "target": true,
         "post_delay": 3000,
         "next": [
-            "Reset_AfterLogin",
-            "Reset_Chooser"
+            "Main"
         ],
         "rate_limit": 0
     },
-    // 误入 Google 手动登录页（点了「添加其他帐号」）→ 按 BACK 返回选号页重选
+    // 误入 Google 手动登录页（点了「添加其他帐号」）→ 按 BACK 返回选号页重选。
     // BACK 键码 4（Android KeyEvent）
-    "Reset_Signin": {
+    "Page_Signin": {
         "recognition": "OCR",
         "expected": [
             "邮箱或电话号码",
@@ -454,33 +414,13 @@
         "key": 4,
         "post_delay": 1500,
         "next": [
-            "Reset_Chooser",
-            "Reset_Login",
             "Main"
         ],
         "rate_limit": 0
     },
-    // 选完号：可能弹「账号删除引导」要撤销（视频 225.5s），
-    // 也可能短暂回到登录页再弹；都不在就走 Main 正常流程。
-    // Reset_Signin 放最前：误入手动登录页立即按 BACK 返回重选
-    "Reset_AfterLogin": {
-        "recognition": "DirectHit",
-        "action": "DoNothing",
-        "pre_delay": 800,
-        "next": [
-            "Reset_Signin",
-            "Reset_Revoke",
-            "Reset_Login",
-            "Reset_Chooser",
-            "Main",
-            "Reset_AfterLogin"
-        ],
-        "rate_limit": 500,
-        "timeout": -1
-    },
-    // 「账号删除引导 / 该账号处于删除流程中。是否撤销删除？」→ 点「撤销」。
+    // 「该账号处于删除流程中，是否撤销删除？」→ 点「撤销」。
     // roi 收在两个按钮一行（撤销按钮中心约 744,526），正文里的「撤销删除」不会进来
-    "Reset_Revoke": {
+    "Page_Revoke": {
         "recognition": "OCR",
         "expected": [
             "撤销",
@@ -498,7 +438,6 @@
         "target": true,
         "post_delay": 2500,
         "next": [
-            "Reset_Revoke",
             "Main"
         ]
     }
