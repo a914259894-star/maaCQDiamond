@@ -24,6 +24,9 @@
     // v2.0.18：弹窗优先。删号链是自循环，不回 Main，反作弊弹窗若不挂进
     // 这里的 next，弹出后点击全被吃掉、链条永远卡在 TapMenuIcon（v2.0.17 实测卡 26 分钟）。
     // 弹窗只在主城出现，所以只需挂在城镇级的 Home/TapMenuIcon/Wait 三个节点上。
+    // v2.0.20：结算页也要挂。Result_Town 在结算页动画期盲点被吞后流程可能提前
+    // 钻进删号链（v2.0.19 实测卡在 STAGE FAIL 页 27 分钟），挂上 Page_Result
+    // 让删号链认识结算页，由结算页自身的 next 逻辑（重试/回城）处理完再放行。
     "Reset_Home": {
         "recognition": "DirectHit",
         "action": "DoNothing",
@@ -31,6 +34,7 @@
         "next": [
             "Popup_Abnormal",
             "Popup_Biubiu",
+            "Page_Result",
             "Reset_MenuOpen",
             "Reset_TapMenuIcon",
             "Reset_BackTrial",
@@ -88,6 +92,7 @@
         "next": [
             "Popup_Abnormal",
             "Popup_Biubiu",
+            "Page_Result",
             "Reset_MenuOpen",
             "Reset_TapMenuIcon",
             "Reset_Home"
@@ -169,6 +174,7 @@
         "next": [
             "Popup_Abnormal",
             "Popup_Biubiu",
+            "Page_Result",
             "Reset_Home"
         ],
         "rate_limit": 0
