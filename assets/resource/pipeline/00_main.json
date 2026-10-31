@@ -28,6 +28,14 @@
         "next": [
             // ---- 弹窗优先：它们会盖住底下的页面 ----
             "Popup_Quiz",
+            // 战斗页排第 2：v2.0.24 实测，点「开始」后游戏加载要 13-18 秒，
+            // 期间 Main 每轮 ~1.4s 空转（600ms 挂起 + 0.8s 判别）。
+            // 原来 Page_Battle 排第 9，前面压着 Popup_Abnormal / Popup_Biubiu /
+            // Popup_Confirm 三个 OCR（Biubiu 还是全屏 OCR）——战斗 UI 一出现
+            // 还要先把这几个跑完才轮到它，白等一轮。提前到第 2（单模板匹配 ~20ms），
+            // 战斗页出现的同一帧就能命中开始连点。
+            // 战斗中不会弹任何弹窗（用户实测：反作弊只在主城），所以安全。
+            "Page_Battle",
             "Popup_Abnormal",
             "Popup_Biubiu",
             // 删除确认页必须压过通用确认框：删除页也有「确定」按钮，
@@ -37,8 +45,6 @@
             "Popup_Confirm",
             "Popup_CheckIn",
             "Popup_Notice",
-            // ---- 战斗最优先 ----
-            "Page_Battle",
             // ---- 结算（打完必须马上处理，否则会卡在结果页）----
             "Page_Result",
             // ---- 删号中段页面（正常流程不会出现，动作唯一无歧义）----
@@ -70,10 +76,13 @@
         "rate_limit": 0
     },
     // 兜底：DirectHit 必定命中，等一会儿回主循环
+    // v2.0.24：600ms → 200ms。实测每轮「Main+Wait」1.4s（600ms 挂起 + 0.8s 判别），
+    // 战斗页/结算页出现的平均延迟因此有 ~0.7s；降到 200ms 后一轮约 1.0s。
+    // 200ms 仍然足够让加载动画推进（截图本身就要 ~280ms，不会打满 CPU）。
     "Wait": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "pre_delay": 600,
+        "pre_delay": 200,
         "next": [
             "Main"
         ],
