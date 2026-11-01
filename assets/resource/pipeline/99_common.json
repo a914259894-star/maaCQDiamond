@@ -78,6 +78,11 @@
     // （v2.0.16 的 roi [280,540,720,180] 按横屏 1280x720 写的，按钮实际在
     // (498,1210) 附近，一次都罩不到 → 真机 0 命中）。改为去掉 roi 全屏找字，
     // target:true 直接点识别框（文字就在按钮上），横竖屏通吃。
+    // v2.0.25：加 pre_delay 3000。实测（v2.0.22 日志 15:08）游戏关闭 → 切 biubiu
+    // 期间 MuMu host 侧接口会瞬态失效 20 多秒（get_display_id=-1、截图失败），
+    // MFAAvalonia 监控到空帧会在恢复的第一帧重建控制器，此时点击极易撞上
+    // 旧控制器输入通道已失效的窗口 → touch_down ret=3 → MaaFW 判 action 失败
+    // → 整条任务 FAILED。缓冲 3 秒避开恢复期（页面本来就要停留，无代价）。
     "Popup_Biubiu": {
         "recognition": "OCR",
         "expected": [
@@ -85,6 +90,7 @@
         ],
         "action": "Click",
         "target": true,
+        "pre_delay": 3000,
         "post_delay": 3000,
         "next": [
             "Main"
