@@ -457,3 +457,6 @@ debug
 .venv/
 
 dist/
+
+# 本地调试缓存（不参与构建）
+test_cache/
