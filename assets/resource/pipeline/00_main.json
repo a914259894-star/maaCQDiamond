@@ -38,13 +38,22 @@
             "Page_Battle",
             "Popup_Abnormal",
             "Popup_Biubiu",
+            // 公告页必须排在 Page_Delete / Page_Confirm2 / Popup_Confirm 之前！
+            // v2.0.27：这三个 OCR 都认「确认」，而公告正文里会出现「能够确认到…」
+            //   这类文字，正好落进它们的 roi（Page_Confirm2 roi 是 380,490,540,110，
+            //   正文那行红字实测 OCR 0.9999 命中「确认」）。识别到就停，后面的
+            //   Popup_Notice 永远轮不到评估 → 公告页每 3.4s 被无意义点一下、关不掉。
+            //   2026-11-03 凌晨因此卡在公告页 5 小时（叠加 EmulatorExtras 黑帧），
+            //   白天实测公告正文一变就复发。公告是模板匹配（1.0 命中、其它页面 ≤0.64），
+            //   放在这里既能先关公告，也不会有误命中风险。
+            "Popup_Notice",
             // 删除确认页必须压过通用确认框：删除页也有「确定」按钮，
             // 被 Popup_Confirm 先命中就会绕过「7 天冷静期已勾选」的校验
             "Page_Delete",
             "Page_Confirm2",
             "Popup_Confirm",
             "Popup_CheckIn",
-            "Popup_Notice",
+
             // ---- 结算（打完必须马上处理，否则会卡在结果页）----
             "Page_Result",
             // ---- 删号中段页面（正常流程不会出现，动作唯一无歧义）----

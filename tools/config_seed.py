@@ -25,6 +25,13 @@ from pathlib import Path
 CONFIG_PREFS: dict[str, object] = {
     "UseSeparateScreenshotTasker": False,
     "UI.LiveView.EnableLiveView": False,
+    # v2.0.27：彻底绕开 MuMu 的 external_renderer_ipc.dll（EmulatorExtras 底层）。
+    # 该 DLL 已造成三类事故：整进程崩溃 ×2（0xc0000005）、touch_down ret=3、
+    # 2026-11-03 凌晨连续 5 小时向 MaaFW 输送黑帧（模板分数 0.10，全节点致盲），
+    # 而模拟器屏幕本身显示正常。Encode=adb screenrecord 编码截图（无损、兼容性好），
+    # MaaTouch=maatouch 注入输入，两者都不经过该 DLL。
+    "AdbControlScreenCapType": "Encode",
+    "AdbControlInputType": "MaaTouch",
 }
 
 CONFIG_RELATIVE_PATH = Path("config") / "config.json"
