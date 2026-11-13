@@ -39,6 +39,11 @@
         ],
         "rate_limit": 0
     },
+    // v2.0.29 连点改造（用户要求）：单点 1156（右1）→ 双点位交替。
+    //   右1 x=1156（原实测有效位），右4 x=808 = 1156 - 3×116
+    //   （方块槽周期 116px，frame_45/frame_150 金框左缘 1077/961/845 交叉验证）。
+    //   每轮 6 对交替共 12 次点击后，才查一次 TOUCH/结算，平均点击速率翻倍。
+    // ============================================================
     "Battle_Tap1": {
         "recognition": "DirectHit",
         "action": "Click",
@@ -56,7 +61,7 @@
         "recognition": "DirectHit",
         "action": "Click",
         "target": [
-            1156,
+            808,
             634
         ],
         "next": [
@@ -70,6 +75,123 @@
         "action": "Click",
         "target": [
             1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap4"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap4": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            808,
+            634
+        ],
+        "next": [
+            "Battle_Tap5"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap5": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap6"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap6": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            808,
+            634
+        ],
+        "next": [
+            "Battle_Tap7"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap7": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap8"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap8": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            808,
+            634
+        ],
+        "next": [
+            "Battle_Tap9"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap9": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap10"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap10": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            808,
+            634
+        ],
+        "next": [
+            "Battle_Tap11"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap11": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            1156,
+            634
+        ],
+        "next": [
+            "Battle_Tap12"
+        ],
+        "rate_limit": 0,
+        "post_delay": 0
+    },
+    "Battle_Tap12": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            808,
             634
         ],
         "next": [
