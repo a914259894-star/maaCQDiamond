@@ -39,169 +39,94 @@
         ],
         "rate_limit": 0
     },
-    // v2.0.29 连点改造（用户要求）：单点 1156（右1）→ 双点位交替。
-    //   右1 x=1156（原实测有效位），右4 x=808 = 1156 - 3×116
-    //   （方块槽周期 116px，frame_45/frame_150 金框左缘 1077/961/845 交叉验证）。
-    //   每轮 6 对交替共 12 次点击后，才查一次 TOUCH/结算，平均点击速率翻倍。
+    // ============================================================
+    // v2.0.30 提速：两击合并进一个节点（repeat），把截图次数砍半
+    //
+    //   实测（debug/maafw.log，v2.0.28 运行中）：
+    //     相邻两击间隔稳定在 253~256ms，而此时 pre_delay / post_delay /
+    //     rate_limit 全为 0（default_pipeline.json 已把 pre/post_delay 设为 0）。
+    //     也就是说这 253ms **全是截图耗时**：Encode 走 `adb exec-out screencap -p`，
+    //     Windows 上每帧都要 spawn 一个 adb 进程。
+    //     → MaaFW 每执行一个节点必重新截一次图，节点数就是速度的硬上限。
+    //
+    //   于是把「一击一节点」压成「两击一节点」：
+    //     MaaFw 5.3+ 的 repeat 在两次 action 之间**不再截图**，第 2 击只等
+    //     repeat_delay(60ms) 的输入耗时。12 击从 12 次截图降到 6 次，
+    //     一轮 ~3.0s → ~2.1s，约 5~6 次/秒（原 12 节点只有 ~3.8 次/秒）。
+    //
+    //   为什么 repeat 只取 2：
+    //     repeat 期间画面完全不刷新，同一点连点太多次会白点（方块队列在动）；
+    //     取 2 既拿到「截图减半」的收益，又保住 6 组 A/B 交替的容错。
+    //     每轮仍是 右1 x=1156 六击 + 右4 x=808 六击，共 12 击。
+    //     右4 x = 1156 - 3×116（方块槽周期 116px，frame_45/frame_150 交叉验证）。
+    //   真正想再快只能换截图后端（EmulatorExtras 约 15ms/帧），
+    //   但它有崩溃/黑帧前科，见 docs/zh_cn/使用说明.md 里四项预置配置的说明。
     // ============================================================
     "Battle_Tap1": {
         "recognition": "DirectHit",
         "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap2"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
+        "target": [1156, 634],
+        "pre_delay": 0,
+        "post_delay": 0,
+        "repeat": 2,
+        "repeat_delay": 60,
+        "next": ["Battle_Tap2"],
+        "rate_limit": 0
     },
     "Battle_Tap2": {
         "recognition": "DirectHit",
         "action": "Click",
-        "target": [
-            808,
-            634
-        ],
-        "next": [
-            "Battle_Tap3"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
+        "target": [808, 634],
+        "pre_delay": 0,
+        "post_delay": 0,
+        "repeat": 2,
+        "repeat_delay": 60,
+        "next": ["Battle_Tap3"],
+        "rate_limit": 0
     },
     "Battle_Tap3": {
         "recognition": "DirectHit",
         "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap4"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
+        "target": [1156, 634],
+        "pre_delay": 0,
+        "post_delay": 0,
+        "repeat": 2,
+        "repeat_delay": 60,
+        "next": ["Battle_Tap4"],
+        "rate_limit": 0
     },
     "Battle_Tap4": {
         "recognition": "DirectHit",
         "action": "Click",
-        "target": [
-            808,
-            634
-        ],
-        "next": [
-            "Battle_Tap5"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
+        "target": [808, 634],
+        "pre_delay": 0,
+        "post_delay": 0,
+        "repeat": 2,
+        "repeat_delay": 60,
+        "next": ["Battle_Tap5"],
+        "rate_limit": 0
     },
     "Battle_Tap5": {
         "recognition": "DirectHit",
         "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap6"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
+        "target": [1156, 634],
+        "pre_delay": 0,
+        "post_delay": 0,
+        "repeat": 2,
+        "repeat_delay": 60,
+        "next": ["Battle_Tap6"],
+        "rate_limit": 0
     },
     "Battle_Tap6": {
         "recognition": "DirectHit",
         "action": "Click",
-        "target": [
-            808,
-            634
-        ],
-        "next": [
-            "Battle_Tap7"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap7": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap8"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap8": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            808,
-            634
-        ],
-        "next": [
-            "Battle_Tap9"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap9": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap10"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap10": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            808,
-            634
-        ],
-        "next": [
-            "Battle_Tap11"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap11": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            1156,
-            634
-        ],
-        "next": [
-            "Battle_Tap12"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
-    },
-    "Battle_Tap12": {
-        "recognition": "DirectHit",
-        "action": "Click",
-        "target": [
-            808,
-            634
-        ],
-        "next": [
-            "Battle_Lord",
-            "Battle_God",
-            "Page_Result",
-            "Battle_Tap1"
-        ],
-        "rate_limit": 0,
-        "post_delay": 0
+        "target": [808, 634],
+        "pre_delay": 0,
+        "post_delay": 0,
+        "repeat": 2,
+        "repeat_delay": 60,
+        "next": ["Battle_Lord", "Battle_God", "Page_Result", "Battle_Tap1"],
+        "rate_limit": 0
     },
 
     // 领主：进度条上出现 TOUCH 横幅 → 点领主按钮。
