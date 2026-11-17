@@ -138,22 +138,21 @@
             "Reset_Home"
         ]
     },
-    // 开始页左下角「城镇」（v2.0.33 同步新标志）
-    //   旧版认 m_mode.png「冒险」横幅，11-16 游戏换皮后从 1.000 掉到 0.792，
-    //   低于阈值 → 删号回程卡在这一页回不去城镇。改为与去程 Page_Mode 相同的
-    //   「试炼」文字入口标志（见 00_main.json Page_Mode 注释），命中后点左下
-    //   「城镇」图标回城。去程点试炼、回程点城镇，两个节点同标志不同目标，
-    //   分属 Main / Reset_Home 两条链，互不干扰。
+    // 开始页左下角「城镇」（v2.0.34 与去程同步回双模板）
+    //   v2.0.33 曾用底部「试炼」快捷入口作标志，但那是账号级配置，删号后消失。
+    //   改回冒险横幅双模板 [m_mode.png, m_mode_new.png]（见 Page_Mode 注释），
+    //   覆盖好友提示在/不在的两种布局。命中后点左下「城镇」回城。
     "Reset_BackMode": {
         "recognition": "TemplateMatch",
         "template": [
-            "m_trial_shortcut.png"
+            "m_mode.png",
+            "m_mode_new.png"
         ],
         "roi": [
-            300,
-            640,
+            70,
+            220,
             150,
-            70
+            100
         ],
         "threshold": 0.85,
         "action": "Click",
