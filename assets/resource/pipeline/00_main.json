@@ -71,14 +71,31 @@
             "Page_Mode",
             "Page_Town",
             "Page_Title",
-            // ---- 删号后段页面 ----
-            // 故意排在所有模板页面之后：这三个是 OCR（roi 大、比模板贵一个量级），
-            // 只在游戏重启后的登录/选号阶段才会出现。放在最后意味着正常流程
-            // 命中前面的模板页面就直接返回，不必多跑三次大 roi OCR。
-            "Page_Login",
+            // ---- 删号后段页面（登录 / 选号）----
+            // v2.0.35 关键修复：Page_Chooser / Page_Signin / Page_Revoke 必须排在
+            //   Page_Login **之前**。
+            //
+            //   2026-11-18 实测卡死 9 分钟的真因：
+            //   m_login.png 裁的是登录页的「请登录账号。」标题行（不是 Google 按钮）。
+            //   Google「选择账号」弹窗弹出后，这行标题仍然露在弹窗上方，于是
+            //   Page_Login 每轮稳定 0.997 命中 → 点 (640,240)（落在弹窗上，无效）
+            //   → 回 Main 又命中 → 死循环。16:40:04~16:49:01 共 158 次 Page_Login、
+            //   0 次 Page_Chooser。
+            //   而选号页 OCR 其实能认出邮箱（linyuhao277168@gmail.com @
+            //   [377,427,183,17] score 1.00，落在 Page_Chooser 的 roi 内），
+            //   只是永远轮不到它 —— 节点顺序被 Page_Login 截胡。
+            //
+            //   为什么提前不增加开销、也不会误命中：
+            //   - 这三个是 OCR，MaaFW 的 batch OCR 本来就是同一张截图预取的
+            //     （日志 prepared batch OCR plan 里一直有它们），提前只改判别顺序，不增截图；
+            //   - 正常游戏页（城镇/战斗/试炼）roi [300,320,680,250] 内没有含 @ 的文本，
+            //     「邮箱或电话号码 / 创建账号」「撤销 / 取消删除 / 恢复账号」也不会出现。
+            //   实测登录页 OCR 只有 Sign in with Apple / Weibo、Login with Facebook、GUEST，
+            //   无 @ 文本；选号页才有邮箱行。
             "Page_Chooser",
             "Page_Signin",
             "Page_Revoke",
+            "Page_Login",
             // ---- 谁都认不出（加载、转场）→ 等一下再看 ----
             "Wait"
         ],
